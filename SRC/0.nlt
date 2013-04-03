@@ -1,0 +1,23 @@
+#инициализационное состояние
+
+INCLUDE(regs.inc)
+
+IMOVE(1, IND2)         # питание
+IMOVE(1, IND3)         # вентилляция
+
+IMOVE(1, S1)           # включение реле 1
+IMOVE(0, S2)
+IMOVE(0, S3)
+IMOVE(0, S4)
+
+IMOVE(0, DOUT)
+
+# проверка контрольной суммы
+# T3 + T4 + CTRL_STATE + EE_SUM = 0x3124
+ADD(TMP0, T3, TMP0)
+ADD(TMP0, T4, TMP0)
+ADD(TMP0, CTRL_STATE, TMP0)
+ADD(TMP0, EE_SUM, TMP0)
+IEQ(0x3124, TMP0, TMP0)
+
+IMUX2(TMP0, NETLIST_SELECT, 2, 1)

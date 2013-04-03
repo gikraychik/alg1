@@ -1,0 +1,9 @@
+# генерация контрольной суммы
+# адрес возврата хранится в TMP0
+
+SUB(0x3124, T3, TMP1)
+SUB(TMP1, T4, TMP1)
+SUB(TMP1, CTRL_STATE, TMP1)
+MOVE(TMP1, EE_SUM)
+
+IMOVE(TMP0, NETLIST_SELECT)

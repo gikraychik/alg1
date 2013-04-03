@@ -1,0 +1,158 @@
+# установка реле
+# TMP31 = TIMER (1 - установлен, 0 - не установлен)
+
+INCLUDE(regs.inc)
+
+MOVE(T1, TMP0)						# TMP0 = T1 (outside) (Tкуп)
+MOVE(T2, TMP1)						# TMP1 = T2 (inside) (Tнар)
+
+IMOVE(60, TMP2)						# TMP2 - 60 seconds
+GE(T1_LAST, TMP2, TMP3)				# TMP3 = (T1_LAST >= 60)
+GE(T2_LAST, TMP2, TMP4)				# TMP4 = (T2_LAST >= 60)
+
+IMOVE(24, TMP2)						# TMP2 - температура при ошибке датчика
+
+IMUX2(TMP3, TMP0, TMP0, TMP2)		# если ошибка с датчиком, TMP0 = 24 (T1)
+IMUX2(TMP4, TMP1, TMP1, TMP2)		# если ошибка с датчиком, TMP1 = 24 (T2)
+
+MOVE(T3, TMP2)						# TMP2 = T3 - желаемая температура в салоне (Tуст)
+
+# реле
+MOVE(S1, TMP6)						# TMP6 = S1
+MOVE(S2, TMP7)						# TMP7 = S2
+MOVE(S3, TMP8)						# TMP8 = S3
+MOVE(S4, TMP9)						# TMP9 = S4
+
+# индикаторы
+MOVE(IND1, TMP20)					# TMP20 = IND1
+MOVE(IND2, TMP21)					# TMP21 = IND2
+MOVE(IND3, TMP22)					# TMP22 = IND3
+MOVE(IND4, TMP23)					# TMP23 = IND4
+MOVE(IND5, TMP24)					# TMP24 = IND5
+
+# начало анализа
+
+# охлаждение ПКА
+IMOVE(15, TMP10)					# TMP10 = 15
+GE(TMP0, TMP10, TMP10)				# TMP10 = (Tнар >= 15)
+
+IMOVE(1, TMP11)						# TMP11 = 1
+ADD(TMP2, TMP11, TMP11)				# TMP11 = Tуст + 1
+GE(TMP1, TMP11, TMP11)				# TMP11 = (Tкуп >= Tуст + 1)
+AND(TMP10, TMP11, TMP11)			# TMP11 = (Tнар >= 15) && (Tкуп >= Tуст + 1)
+
+#IMOVE(0, TMP12)					# TMP12 = 0 (временная переменная для записи констант)
+#MUX2(TMP11, TMP7, TMP12, TMP7)		# отключение реле 2, если не выполнены условия TMP11
+#MUX2(TMP11, TMP23, TMP12, TMP23)	# отключение индикатора 4 (охлаждение ПКА, зел. цвет)
+#MUX2(TMP11, TIMER, TMP12, TIMER)	# отключение таймера (обнуление TIMER_SEC не требуется)
+LE(TMP0, TMP2, TMP12)				# TMP12 = (Tкуп <= Tуст)
+IMOVE(TMP13, 0)						# TMP13 = 0
+MUX2(TMP12, TMP7, TMP7, TMP13)		# if (tmp12) { tmp7 = 0; } выключение реле 2
+MUX2(TMP12, TMP23, TMP23, TMP13)	# if (tmp12) { tmp23 = 0; } выключение индикатора 4
+
+NOT(TIMER, TMP13)					# TMP13 = !TIMER
+AND(TMP11, TMP13, TMP13)			# TMP13 = TMP11 && !TIMER
+IMOVE(1, TMP14)						# TMP14 = 1
+MUX2(TMP13, TIMER, TIMER, TMP14)	# если выполнено TMP13, TIMER = 1; else TIMER = TIMER
+IMOVE(120, TMP14)					# TMP14 = 120 seconds
+MUX2(TMP13, TIMER_SEC, TIMER_SEC, TMP14)	# если выполнено TMP13, TIMER_SEC = 1;else TIMER_SEC = TIMER_SEC
+
+AND(TMP11, TIMER, TMP13)			# TMP13 = TMP11 && TIMER
+IEQ(0, TIMER_SEC, TMP14)			# TMP14 = (TIMER_SEC == 0)
+
+AND(TMP13, TMP14, TMP15)			# TMP15 = TMP13 && (TIMER_SEC == 0)
+IMOVE(1, TMP12)						# TMP12 = 1
+MUX2(TMP15, TMP7, TMP7, TMP12)		# if (tmp15) { tmp7 = 1; } включение реле 2
+MUX2(TMP15, TMP23, TMP23, TMP12)	# if (tmp15) { tmp23 = 1; } включение индикатора 4
+IMOVE(0, TMP12)						# TMP12 = 0
+MUX2(TMP15, TIMER, TIMER, TMP12)	# if (tmp15) { TIMER = 0; } выключение таймера
+
+# нагрев ПКА
+IMOVE(-5, TMP10)					# TMP10 = -5
+IMOVE(20, TMP11)					# TMP11 = 20
+LE(TMP10, TMP1, TMP10)				# TMP10 = (-5 <= Tнар)
+LT(TMP1, TMP11, TMP11)				# TMP11 = (Tнар < 20)
+AND(TMP10, TMP11, TMP10)			# TMP10 = (-5 <= Tнар) && (Tнар < 20)
+IMOVE(1, TMP11)						# TMP11 = 1
+SUB(TMP2, TMP11, TMP11)				# TMP11 = Tуст - 1
+LT(TMP0, TMP11, TMP11)				# TMP11 = (Tкуп < Tуст - 1)
+AND(TMP10, TMP11, TMP11)			# TMP11 = (-5 <= Tнар) && (Tнар < 20) && (Tкуп < Tуст - 1)
+
+IMOVE(1, TMP12)						# TMP12 = 1
+AND(TMP11, TMP7, TMP13)				# TMP13 = TMP11 && (S2 == 1)
+MUX2(TMP13, TMP8, TMP8, TMP12)		# if (tmp13) { tmp8 = 1; } включение реле 3 (реле 2 уже работает)
+MUX2(TMP13, TMP24, TMP24, TMP12)	# if (tmp13) { tmp24 = 1; } включение индикатора 5
+IMOVE(0, TMP12)						# TMP12 = 0
+MUX2(TMP13, TIMER, TIMER, TMP12)	# if (tmp13) { TIMER = 0; }
+
+NOT(TMP7, TMP12)					# TMP12 = (S2 == 0)
+AND(TMP11, TMP12, TMP13)			# TMP13 = TMP11 && (S2 == 0)
+
+NOT(TIMER, TMP12)					# TMP12 = !TIMER
+AND(TMP13, TMP12, TMP14)			# TMP14 = TMP11 && (S2 == 0) && (!TIMER)
+IMOVE(1, TMP12)						# TMP12 = 1
+MUX2(TMP14, TIMER, TIMER, TMP12)	# if (tmp14) { timer = 1; } перезапуск таймера
+IMOVE(120, TMP12)					# TMP12 = 120 seconds
+MUX2(TMP14, TIMER_SEC, TIMER_SEC, TMP12)	# if (tmp14) { TIMER_SEC = 120; } перезапуск таймера
+
+AND(TMP13, TIMER, TMP13)			# TMP13 = TMP13 && TIMER
+IEQ(0, TIMER_SEC, TMP12)			# TMP12 = (TIMER_SEC == 0)
+AND(TMP13, TMP12, TMP13)			# TMP13 = TMP13 && (TIMER_SEC == 0)
+IMOVE(1, TMP12)						# TMP12 = 1
+MUX2(TMP13, TMP7, TMP7, TMP12)		# if (tmp13) { s2 = 1; }
+MUX2(TMP13, TMP8, TMP8, TMP12)		# if (tmp13) { s3 = 1; }
+MUX2(TMP13, TMP24, TMP24, TMP12)	# if (tmp13) { ind5 = 1; }
+IMOVE(0, TMP12)						# TMP12 = 0
+MUX2(TMP13, TIMER, TIMER, TMP12)	# if (tmp13) { TIMER = 0; }
+
+GE(TMP0, TMP2, TMP10)				# TMP10 = (Tкуп >= Tуст)
+GE(TMP2, TMP0, TMP11)				# TMP11 = (Tуст <= Tкуп)
+
+NOT(TMP11, TMP12)					# TMP12 = !(Tуст <= Tкуп)
+AND(TMP10, TMP12, TMP12)			# TMP12 = (Tкуп >= Tуст) && !(Tуст <= Tкуп)
+IMOVE(0, TMP13)						# TMP13 = 0
+MUX2(TMP12, TMP8, TMP8, TMP13)		# if (tmp12) { s3 = 0; }
+MUX2(TMP12, TMP24, TMP24, TMP13)	# if (tmp12) { ind5 = 0; }
+
+AND(TMP10, TMP11, TMP11)			# TMP11 = (Tкуп >= Tуст) && (Tуст <= Tкуп)
+MUX2(TMP11, TMP7, TMP7, TMP13)		# if (tmp11) { s2 = 0; }
+MUX2(TMP11, TMP8, TMP8, TMP13)		# if (tmp11) { s3 = 0; }
+MUX2(TMP11, TMP24, TMP24, TMP13)	# if (tmp11) { ind5 = 0; }
+
+# охлаждение ИА
+IMOVE(18, TMP10)					# TMP10 = 18
+GE(TMP1, TMP10, TMP10)				# TMP10 = (Tнар >= 18)
+IMOVE(1, TMP11)						# TMP11 = 1
+ADD(TMP2, TMP11, TMP11)				# TMP11 = Tуст + 1
+GE(TMP0, TMP11, TMP11)				# TMP11 = (Tкуп >= Tуст + 1)
+AND(TMP10, TMP11, TMP11)			# TMP11 = (Tнар >= 18) && (Tкуп >= Tуст + 1)
+
+IMOVE(1, TMP12)						# TMP12 = 1
+MUX2(TMP11, TMP9, TMP9, TMP12)		# if (tmp11) { s4 = 1; }
+MUX2(TMP11, TMP24, TMP24, TMP12)	# if (tmp11) { ind5 = 1; }
+
+LE(TMP0, TMP2, TMP11)				# TMP11 = (Tкуп <= Tуст)
+IMOVE(0, TMP12)						# TMP12 = 0
+MUX2(TMP11, TMP9, TMP9, TMP12)		# if (tmp11) { s4 = 0; }
+MUX2(TMP11, TMP24, TMP24, TMP12)	# if (tmp11) { ind5 = 0; }
+
+MOVE(TMP6, S1)
+MOVE(TMP7, S2)
+MOVE(TMP8, S3)
+MOVE(TMP9, S4)
+
+MOVE(TMP20, IND1)
+MOVE(TMP21, IND2)
+MOVE(TMP22, IND3)
+MOVE(TMP23, IND4)
+MOVE(TMP24, IND5)
+
+IMOVE(7, NETLIST_SELECT)
+
+
+
+
+
+
+
+

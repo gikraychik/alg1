@@ -1,0 +1,54 @@
+﻿# ΢ਡ΢ʠ ���-
+
+INCLUDE(regs.inc)
+
+MOVE(T1, TMP15)						# TMP15 = T1; outside
+MOVE(T2, TMP16)						# TMP16 = T2; inside
+
+IEQ(0, VIDEO_MODE, TMP0)			# TMP0 = (video_mode == 0)
+IEQ(1, VIDEO_MODE, TMP1)			# TMP1 = (video_mode == 1)
+IEQ(2, VIDEO_MODE, TMP2)			# TMP2 = (video_mode == 2)
+IEQ(3, VIDEO_MODE, TMP3)			# TMP3 = (video_mode == 3)
+
+IMOVE(60, TMP4)						# 60 seconds
+
+GE(T1_LAST, TMP4, TMP5)				# TMP5 = (T1_LAST >= 60)
+GE(T2_LAST, TMP4, TMP6)				# TMP6 = (T2_LAST >= 60)
+
+NOT(TMP5, TMP7)						# TMP7 = !TMP5 <=> TMP7 = (T1_LAST < 60)
+NOT(TMP6, TMP8)						# TMP8 = !TMP6 <=> TMP8 = (T2_LAST < 60)
+
+AND(TMP0, TMP6, TMP9)				# TMP9 = (video_mode == 0) && (T2_LAST >= 60); error inside
+AND(TMP1, TMP5, TMP10)				# TMP10 = (video_mode == 1) && (T1_LAST >= 60); error outside
+
+IMUX2(TMP0, TMP11, 0, 0)			#TMP11 - ϥࢫɠᨬ®ˠĨᯫů LED0
+IMUX2(TMP1, TMP11, TMP11, 0x76)		# '㧍
+IMUX2(TMP2, TMP11, TMP11, 0xEC)		# 'ϧ
+IMUX2(TMP3, TMP11, TMP11, 0xEC)		# 'ϧ
+
+OR(TMP9, TMP10, TMP12)				# TMP12 - Ψȡʠ ϠΨǮ諠
+
+IMUX2(TMP12, TMP11, TMP11, 0)		# Ρͣ˥ͨŠTMP11, š˨ ϠΨǮ諠 Ψȡʠ
+
+AND(TMP0, TMP7, TMP13)				# TMP13 = (video_mode == 0) && (T1_LAST < 60)
+AND(TMP1, TMP8, TMP14)				# TMP14 = (video_mode == 1) && (T2_LAST < 60)
+
+IMUX2(TMP13, TMP17, 99, TMP16)		# TMP17 - ⥬ϥࠢ㠠, ʮ⮠/ «®Ĩ⡯ ͠ ���-
+IMUX2(TMP14, TMP17, TMP17, TMP15)
+IMUX2(TMP2, TMP17, TMP17, T3)
+IMUX2(TMP3, TMP17, TMP17, T3)
+
+CD(TMP17, TMP18)					# TMP18 - LED1, TMP19 - LED2, TMP20 - LED3
+
+# š˨ Ψȡʠ, ̥ͯŬ ʠƤ멠ᨬ®ˠȭĨʠ⮠ (LED1 - LED3)
+IMUX2(TMP12, TMP18, TMP18, 0x9E)	# 'E'
+IMUX2(TMP12, TMP19, TMP19, 0xA)		# 'r'
+IMUX2(TMP12, TMP20, TMP20, 0xA)		# 'r'
+
+MOVE(TMP11, LED0)
+MOVE(TMP18, LED1)
+MOVE(TMP19, LED2)
+MOVE(TMP20, LED3)
+
+IMOVE(6, NETLIST_SELECT)
+

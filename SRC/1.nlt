@@ -1,0 +1,5 @@
+
+
+INCLUDE(regs.inc)
+
+IMUX2(CTRL_STATE, NETLIST_SELECT, 5, 4)   # 4 - standby
