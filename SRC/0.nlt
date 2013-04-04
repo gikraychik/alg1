@@ -5,12 +5,14 @@ INCLUDE(regs.inc)
 IMOVE(1, IND2)         # питание
 IMOVE(1, IND3)         # вентилляция
 
-IMOVE(1, S1)           # включение реле 1
+IMOVE(0, S1)           # включение реле 1
 IMOVE(0, S2)
 IMOVE(0, S3)
 IMOVE(0, S4)
+IMOVE(0, VIDEO_MODE)	# добавлено для тестирования
 
 IMOVE(0, DOUT)
+#IMOVE(0, CTRL_STATE)	# добавлено для тестирования
 
 # проверка контрольной суммы
 # T3 + T4 + CTRL_STATE + EE_SUM = 0x3124

@@ -45,17 +45,9 @@ MUX2(TMP2, TMP17, TMP17, T3)		# if (video_mode == 2) { tmp17 = t3; }
 MUX2(TMP3, TMP17, TMP17, T3)		# if (video_mode == 3) { tmp17 = t3; }
 
 CD(TMP17, TMP18)					# TMP18 - LED1, TMP19 - LED2, TMP20 - LED3
-
-# s? ???, ??U ????R??I?? (LED1 - LED3)
-IMOVE(0x9E, TMP28)					# TMP28 = 0x9E 'E'
-MUX2(TMP12, TMP18, TMP18, TMP28)	# if (tmp12) { tmp18 = 'E' }
-IMOVE(0xA, TMP28)					# TMP28 = 0xA
-MUX2(TMP12, TMP19, TMP19, TMP28)	# 'r'
-MUX2(TMP12, TMP20, TMP20, TMP28)	# 'r'
-
+# *
+IMOVE(1, TMP11)
 MOVE(TMP11, LED0)
-MOVE(TMP18, LED1)
-MOVE(TMP19, LED2)
-MOVE(TMP20, LED3)
-
+CD(TMP17, LED1)
+# *
 IMOVE(5, NETLIST_SELECT)
