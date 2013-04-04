@@ -5,7 +5,7 @@ INCLUDE(regs.inc)
 
 IMOVE(24, T3)          # желаемая температура в вагоне
 IMOVE(5, T4)           # температура зимних условий
-IMOVE(CTRL_STATE, 1)   # режим standby
+IMOVE(1, CTRL_STATE)   # режим standby
 
 IMOVE(4, TMP0)         # адрес возврата: standby режим
 IMOVE(3, NETLIST_SELECT)
