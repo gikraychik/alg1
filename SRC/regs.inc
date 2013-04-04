@@ -147,5 +147,6 @@ EDT					@0x17
 #Tout_OLD			@0x1A
 
 TIMER2				@0x1B
+TIMER				@0xFD
 
 DOUT	@0x74
