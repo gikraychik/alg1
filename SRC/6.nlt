@@ -68,7 +68,9 @@ IMOVE(0, TMP12)						# TMP12 = 0
 MUX2(TMP15, TIMER, TIMER, TMP12)	# if (tmp15) { TIMER = 0; } выключение таймера
 
 # нагрев ПКА
-IMOVE(-5, TMP10)					# TMP10 = -5
+IMOVE(5, TMP10)						# TMP10 = 5
+IMOVE(0, TMP11)						# TMP11 = 0
+SUB(TMP11, TMP10, TMP10)			# TMP10 = -5
 IMOVE(20, TMP11)					# TMP11 = 20
 LE(TMP10, TMP1, TMP10)				# TMP10 = (-5 <= Tнар)
 LT(TMP1, TMP11, TMP11)				# TMP11 = (Tнар < 20)

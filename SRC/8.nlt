@@ -6,4 +6,4 @@ INCLUDE(regs.inc)
 
 MOVE(TMP31, T3)
 IMOVE(5, TMP0)				# отрисовка экрана
-IMOVE(3, NETLIST_SELECT)	# генерация контрольной суммы
+IMOVE(3, NETLIST_SELECT)
