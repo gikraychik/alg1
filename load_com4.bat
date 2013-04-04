@@ -1,4 +1,6 @@
 @echo off
 
-TOOLS\t167b.exe 4 12 openchannel loadhex+ HEX\app.hex bye
-del /Q history.ini
+copy TOOLS\opencom4.m3p TOOLS\opencom.m3p
+TOOLS\t2.exe TOOLS\load.m3p
+
+del /q history.ini

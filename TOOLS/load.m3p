@@ -1,0 +1,3 @@
+9600 lfile TOOLS\opencom.m3p
+loadhex HEX\app.hex
+bye
