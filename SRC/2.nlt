@@ -7,5 +7,5 @@ IMOVE(24, T3)          # желаемая температура в вагоне
 IMOVE(5, T4)           # температура зимних условий
 IMOVE(0, CTRL_STATE)   # режим standby
 
-IMOVE(5, TMP0)         # адрес возврата: standby режим
-IMOVE(3, NETLIST_SELECT)
+IMOVE(5, TMP0)         # адрес возврата: отрисовка экрана
+IMOVE(3, NETLIST_SELECT)м

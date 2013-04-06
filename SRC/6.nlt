@@ -44,7 +44,7 @@ AND(TMP10, TMP11, TMP11)			# TMP11 = (Tнар >= 15) && (Tкуп >= Tуст + 1)
 #IMOVE(0, TMP12)					# TMP12 = 0 (временная переменная для записи констант)
 #MUX2(TMP11, TMP7, TMP12, TMP7)		# отключение реле 2, если не выполнены условия TMP11
 #MUX2(TMP11, TMP23, TMP12, TMP23)	# отключение индикатора 4 (охлаждение ПКА, зел. цвет)
-#MUX2(TMP11, TIMER, TMP12, TIMER)	# отключение таймера (обнуление TIMER_SEC не требуется)
+#MUX2(TMP11, TIMER, TMP12, TIMER)	# отключение таймера (обнуление TIMER_MSEC не требуется)
 LE(TMP0, TMP2, TMP12)				# TMP12 = (Tкуп <= Tуст)
 IMOVE(0, TMP13)						# TMP13 = 0
 MUX2(TMP12, TMP7, TMP7, TMP13)		# if (tmp12) { tmp7 = 0; } выключение реле 2
@@ -55,12 +55,12 @@ AND(TMP11, TMP13, TMP13)			# TMP13 = TMP11 && !TIMER
 IMOVE(1, TMP14)						# TMP14 = 1
 MUX2(TMP13, TIMER, TIMER, TMP14)	# если выполнено TMP13, TIMER = 1; else TIMER = TIMER
 IMOVE(120, TMP14)					# TMP14 = 120 seconds
-MUX2(TMP13, TIMER_SEC, TIMER_SEC, TMP14)	# если выполнено TMP13, TIMER_SEC = 1;else TIMER_SEC = TIMER_SEC
+MUX2(TMP13, TIMER_MSEC, TIMER_MSEC, TMP14)	# если выполнено TMP13, TIMER_MSEC = 1;else TIMER_MSEC = TIMER_MSEC
 
 AND(TMP11, TIMER, TMP13)			# TMP13 = TMP11 && TIMER
-IEQ(0, TIMER_SEC, TMP14)			# TMP14 = (TIMER_SEC == 0)
+IEQ(0, TIMER_MSEC, TMP14)			# TMP14 = (TIMER_MSEC == 0)
 
-AND(TMP13, TMP14, TMP15)			# TMP15 = TMP13 && (TIMER_SEC == 0)
+AND(TMP13, TMP14, TMP15)			# TMP15 = TMP13 && (TIMER_MSEC == 0)
 IMOVE(1, TMP12)						# TMP12 = 1
 MUX2(TMP15, TMP7, TMP7, TMP12)		# if (tmp15) { tmp7 = 1; } включение реле 2
 MUX2(TMP15, TMP23, TMP23, TMP12)	# if (tmp15) { tmp23 = 1; } включение индикатора 4
@@ -95,11 +95,11 @@ AND(TMP13, TMP12, TMP14)			# TMP14 = TMP11 && (S2 == 0) && (!TIMER)
 IMOVE(1, TMP12)						# TMP12 = 1
 MUX2(TMP14, TIMER, TIMER, TMP12)	# if (tmp14) { timer = 1; } перезапуск таймера
 IMOVE(120, TMP12)					# TMP12 = 120 seconds
-MUX2(TMP14, TIMER_SEC, TIMER_SEC, TMP12)	# if (tmp14) { TIMER_SEC = 120; } перезапуск таймера
+MUX2(TMP14, TIMER_MSEC, TIMER_MSEC, TMP12)	# if (tmp14) { TIMER_MSEC = 120; } перезапуск таймера
 
 AND(TMP13, TIMER, TMP13)			# TMP13 = TMP13 && TIMER
-IEQ(0, TIMER_SEC, TMP12)			# TMP12 = (TIMER_SEC == 0)
-AND(TMP13, TMP12, TMP13)			# TMP13 = TMP13 && (TIMER_SEC == 0)
+IEQ(0, TIMER_MSEC, TMP12)			# TMP12 = (TIMER_MSEC == 0)
+AND(TMP13, TMP12, TMP13)			# TMP13 = TMP13 && (TIMER_MSEC == 0)
 IMOVE(1, TMP12)						# TMP12 = 1
 MUX2(TMP13, TMP7, TMP7, TMP12)		# if (tmp13) { s2 = 1; }
 MUX2(TMP13, TMP8, TMP8, TMP12)		# if (tmp13) { s3 = 1; }
