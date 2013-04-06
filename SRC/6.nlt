@@ -3,8 +3,8 @@
 
 INCLUDE(regs.inc)
 
-MOVE(T1, TMP0)						# TMP0 = T1 (outside) (Tкуп)
-MOVE(T2, TMP1)						# TMP1 = T2 (inside) (Tнар)
+MOVE(T1, TMP0)						# TMP0 = T1 (outside) (Tнар)
+MOVE(T2, TMP1)						# TMP1 = T2 (inside) (Tкуп)
 
 IMOVE(60, TMP2)						# TMP2 - 60 seconds
 GE(T1_LAST, TMP2, TMP3)				# TMP3 = (T1_LAST >= 60)
@@ -45,7 +45,9 @@ AND(TMP10, TMP11, TMP11)			# TMP11 = (Tнар >= 15) && (Tкуп >= Tуст + 1)
 #MUX2(TMP11, TMP7, TMP12, TMP7)		# отключение реле 2, если не выполнены условия TMP11
 #MUX2(TMP11, TMP23, TMP12, TMP23)	# отключение индикатора 4 (охлаждение ПКА, зел. цвет)
 #MUX2(TMP11, TIMER, TMP12, TIMER)	# отключение таймера (обнуление TIMER_MSEC не требуется)
-LE(TMP0, TMP2, TMP12)				# TMP12 = (Tкуп <= Tуст)
+LE(TMP1, TMP2, TMP12)				# TMP12 = (Tкуп <= Tуст)
+NOT(TMP10, TMP10)					# TMP10 = (Tнар < 15)
+OR(TMP12, TMP10, TMP12)				# TMP12 = (Tкуп <= Tуст) || (Tнар < 15)
 IMOVE(0, TMP13)						# TMP13 = 0
 MUX2(TMP12, TMP7, TMP7, TMP13)		# if (tmp12) { tmp7 = 0; } выключение реле 2
 MUX2(TMP12, TMP23, TMP23, TMP13)	# if (tmp12) { tmp23 = 0; } выключение индикатора 4
@@ -55,7 +57,7 @@ AND(TMP11, TMP13, TMP13)			# TMP13 = TMP11 && !TIMER
 IMOVE(1, TMP14)						# TMP14 = 1
 MUX2(TMP13, TIMER, TIMER, TMP14)	# если выполнено TMP13, TIMER = 1; else TIMER = TIMER
 IMOVE(120, TMP14)					# TMP14 = 120 seconds
-MUX2(TMP13, TIMER_MSEC, TIMER_MSEC, TMP14)	# если выполнено TMP13, TIMER_MSEC = 1;else TIMER_MSEC = TIMER_MSEC
+MUX2(TMP13, TIMER_MSEC, TIMER_MSEC, TMP14)	# если выполнено TMP13, TIMER_MSEC = 1; else TIMER_MSEC = TIMER_MSEC
 
 AND(TMP11, TIMER, TMP13)			# TMP13 = TMP11 && TIMER
 IEQ(0, TIMER_MSEC, TMP14)			# TMP14 = (TIMER_MSEC == 0)
