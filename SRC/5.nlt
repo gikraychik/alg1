@@ -1,4 +1,5 @@
 # отрисовка экрана
+# TMP24 - переменная для констант
 INCLUDE(regs.inc)
 
 MOVE(T1, TMP15)						# TMP15 = T1; outside
@@ -20,42 +21,42 @@ NOT(TMP6, TMP8)						# TMP8 = !TMP6 <=> TMP8 = (T2_LAST < 60)
 AND(TMP0, TMP6, TMP9)				# TMP9 = (video_mode == 0) && (T2_LAST >= 60); error inside
 AND(TMP1, TMP5, TMP10)				# TMP10 = (video_mode == 1) && (T1_LAST >= 60); error outside
 
-IMOVE(0, TMP28)						# TMP28 = 0
+IMOVE(0, TMP24)						# TMP24 = 0
 # TMP11 - первый символ экрана LED0
-MUX2(TMP0, TMP11, TMP11, TMP28)		# if (VIDEO_MODE == 0) { TMP11 = ''; }
-IMOVE(0x76, TMP28)					# TMP28 = 0x76 'У'
-MUX2(TMP1, TMP11, TMP11, TMP28)		# if (VIDEO_MODE == 1) { TMP11 = 'У'; }
-IMOVE(0xEC, TMP28)					# TMP28 = 0xEC 'П'
-MUX2(TMP2, TMP11, TMP11, TMP28)		# if (VIDEO_MODE == 2) { TMP11 = 'П'; }
-MUX2(TMP3, TMP11, TMP11, TMP28)		# if (VIDEO_MODE == 3) { TMP11 = 'П'; }
+MUX2(TMP0, TMP11, TMP11, TMP24)		# if (VIDEO_MODE == 0) { TMP11 = ''; }
+IMOVE(0x76, TMP24)					# TMP24 = 0x76 'У'
+MUX2(TMP1, TMP11, TMP11, TMP24)		# if (VIDEO_MODE == 1) { TMP11 = 'У'; }
+IMOVE(0xEC, TMP24)					# TMP24 = 0xEC 'П'
+MUX2(TMP2, TMP11, TMP11, TMP24)		# if (VIDEO_MODE == 2) { TMP11 = 'П'; }
+MUX2(TMP3, TMP11, TMP11, TMP24)		# if (VIDEO_MODE == 3) { TMP11 = 'П'; }
 
 OR(TMP9, TMP10, TMP12)				# TMP12 - if error accured
 
-IMOVE(0, TMP28)						# TMP28 = 0
-MUX2(TMP12, TMP11, TMP11, TMP28)	# if (tmp12) { tmp11 = ''; }
+IMOVE(0, TMP24)						# TMP24 = 0
+MUX2(TMP12, TMP11, TMP11, TMP24)	# if (tmp12) { tmp11 = ''; }
 
 AND(TMP0, TMP7, TMP13)				# TMP13 = (video_mode == 0) && (T1_LAST < 60)
 AND(TMP1, TMP8, TMP14)				# TMP14 = (video_mode == 1) && (T2_LAST < 60)
 
 # TMP17 - выводимая температура
-IMOVE(70, TMP28)					# TMP28 = 70
-MUX2(TMP13, TMP17, TMP28, TMP16)	# if (tmp13) { tmp17 = t2; } else { tmp17 = 70; }
+IMOVE(70, TMP24)					# TMP24 = 70
+MUX2(TMP13, TMP17, TMP24, TMP16)	# if (tmp13) { tmp17 = t2; } else { tmp17 = 70; }
 MUX2(TMP14, TMP17, TMP17, TMP15)	# if (tmp14) { tmp17 = t1; }
-MUX2(TMP2, TMP17, TMP17, T3)		# if (video_mode == 2) { tmp17 = t3; }
-MUX2(TMP3, TMP17, TMP17, T3)		# if (video_mode == 3) { tmp17 = t3; }
+MUX2(TMP2, TMP17, TMP17, T3)		# if (video_mode == 2) { tmp17 = t3; } #
+MUX2(TMP3, TMP17, TMP17, TMP25)		# if (video_mode == 3) { tmp17 = t3; } #
 
 CD(TMP17, TMP18)					# TMP18 - LED1, TMP19 - LED2, TMP20 - LED3
 
 # s? ???, ??U ????R??I?? (LED1 - LED3)
-IMOVE(0x9E, TMP28)					# TMP28 = 0x9E 'E'
-MUX2(TMP12, TMP18, TMP18, TMP28)	# if (tmp12) { tmp18 = 'E' }
-IMOVE(0xA, TMP28)					# TMP28 = 0xA
-MUX2(TMP12, TMP19, TMP19, TMP28)	# 'r'
-MUX2(TMP12, TMP20, TMP20, TMP28)	# 'r'
+IMOVE(0x9E, TMP24)					# TMP24 = 0x9E 'E'
+MUX2(TMP12, TMP18, TMP18, TMP24)	# if (tmp12) { tmp18 = 'E' }
+IMOVE(0xA, TMP24)					# TMP24 = 0xA
+MUX2(TMP12, TMP19, TMP19, TMP24)	# 'r'
+MUX2(TMP12, TMP20, TMP20, TMP24)	# 'r'
 
 MOVE(TMP11, LED0)
 MOVE(TMP18, LED1)
 MOVE(TMP19, LED2)
 MOVE(TMP20, LED3)
 
-IMOVE(5, NETLIST_SELECT)
+IMOVE(7, NETLIST_SELECT)
