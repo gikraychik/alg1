@@ -41,22 +41,23 @@ ADD(TMP2, TMP11, TMP11)				# TMP11 = Tуст + 1
 GE(TMP1, TMP11, TMP11)				# TMP11 = (Tкуп >= Tуст + 1)
 AND(TMP10, TMP11, TMP11)			# TMP11 = (Tнар >= 15) && (Tкуп >= Tуст + 1)
 
-#IMOVE(0, TMP12)					# TMP12 = 0 (временная переменная для записи констант)
-#MUX2(TMP11, TMP7, TMP12, TMP7)		# отключение реле 2, если не выполнены условия TMP11
-#MUX2(TMP11, TMP23, TMP12, TMP23)	# отключение индикатора 4 (охлаждение ПКА, зел. цвет)
-#MUX2(TMP11, TIMER, TMP12, TIMER)	# отключение таймера (обнуление TIMER_MSEC не требуется)
 LE(TMP1, TMP2, TMP12)				# TMP12 = (Tкуп <= Tуст)
 NOT(TMP10, TMP10)					# TMP10 = (Tнар < 15)
 OR(TMP12, TMP10, TMP12)				# TMP12 = (Tкуп <= Tуст) || (Tнар < 15)
+AND(TMP12, TMP7, TMP12)				# TMP12 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2 == 1)
 IMOVE(0, TMP13)						# TMP13 = 0
 MUX2(TMP12, TMP7, TMP7, TMP13)		# if (tmp12) { tmp7 = 0; } выключение реле 2
+NOT(TMP9, TMP13)					# TMP13 = (S4 == 0)
+AND(TMP12, TMP13, TMP12)			# TMP12 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2 == 1) && (S4 == 0)
 MUX2(TMP12, TMP23, TMP23, TMP13)	# if (tmp12) { tmp23 = 0; } выключение индикатора 4
 
 NOT(TIMER, TMP13)					# TMP13 = !TIMER
-AND(TMP11, TMP13, TMP13)			# TMP13 = TMP11 && !TIMER
+AND(TMP11, TMP13, TMP13)			# TMP13 = (Tнар >= 15) && (Tкуп >= Tуст + 1) && !TIMER
+NOT(TMP7, TMP14)					# TMP14 = (S2 == 0)
+AND(TMP13, TMP14, TMP13)			# TMP13 = (Tнар >= 15) && (Tкуп >= Tуст + 1) && !TIMER && (S2 == 0)
 IMOVE(1, TMP14)						# TMP14 = 1
 MUX2(TMP13, TIMER, TIMER, TMP14)	# если выполнено TMP13, TIMER = 1; else TIMER = TIMER
-IMOVE(1000, TMP14)					# TMP14 = 120 seconds
+IMOVE(1500, TMP14)					# TMP14 = 120 seconds
 MUX2(TMP13, TIMER_MSEC, TIMER_MSEC, TMP14)	# если выполнено TMP13, TIMER_MSEC = 120 seconds; else TIMER_MSEC = TIMER_MSEC
 
 AND(TMP11, TIMER, TMP13)			# TMP13 = TMP11 && TIMER
@@ -94,9 +95,11 @@ AND(TMP11, TMP12, TMP13)			# TMP13 = TMP11 && (S2 == 0)
 
 NOT(TIMER, TMP12)					# TMP12 = !TIMER
 AND(TMP13, TMP12, TMP14)			# TMP14 = TMP11 && (S2 == 0) && (!TIMER)
+NOT(TMP8, TMP12)					# TMP12 = (S3 == 0)
+AND(TMP14, TMP12, TMP14)			# TMP14 = TMP11 && (S2 == 0) && (!TIMER) && (S3 == 0)
 IMOVE(1, TMP12)						# TMP12 = 1
 MUX2(TMP14, TIMER, TIMER, TMP12)	# if (tmp14) { timer = 1; } перезапуск таймера
-IMOVE(1000, TMP12)					# TMP12 = 120 seconds
+IMOVE(1500, TMP12)					# TMP12 = 120 seconds
 MUX2(TMP14, TIMER_MSEC, TIMER_MSEC, TMP12)	# if (tmp14) { TIMER_MSEC = 120 seconds; } перезапуск таймера
 
 AND(TMP13, TIMER, TMP13)			# TMP13 = TMP13 && TIMER
@@ -118,6 +121,7 @@ OR(TMP10, TMP11, TMP10)				# TMP10 = (Tкуп >= Tуст) || (Tнар < -5)
 IMOVE(20, TMP11)					# TMP11 = 20
 GE(TMP0, TMP11, TMP11)				# TMP11 = (Tнар >= 20)
 OR(TMP10, TMP11, TMP11)				# TMP11 = (Tкуп >= Tуст) || (Tнар < -5) || (Tнар >= 20)
+AND(TMP11, TMP8, TMP11)				# TMP11 = ((Tкуп >= Tуст) || (Tнар < -5) || (Tнар >= 20)) && (S3 == 1)
 
 IMOVE(0, TMP10)						# TMP10 = 0
 MUX2(TMP11, TMP7, TMP7, TMP10)		# if (tmp11) { s2 = 0; }
@@ -139,8 +143,14 @@ MUX2(TMP11, TMP23, TMP23, TMP12)	# if (tmp11) { ind4 = 1; }
 IMOVE(1, TMP10)						# TMP10 = 1
 SUB(TMP2, TMP10, TMP10)				# TMP10 = Tуст - 1
 LE(TMP1, TMP10, TMP11)				# TMP11 = (Tкуп <= Tуст - 1)
+IMOVE(18, TMP10)					# TMP10 = 18
+LT(TMP0, TMP10, TMP10)				# TMP10 = (Tнар < 18)
+OR(TMP11, TMP10, TMP11)				# TMP11 = (Tкуп <= Tуст - 1) || (Tнар < 18)
+AND(TMP11, TMP9, TMP11)				# TMP11 = ((Tкуп <= Tуст - 1) || (Tнар < 18)) && (S4 == 1)
 IMOVE(0, TMP12)						# TMP12 = 0
 MUX2(TMP11, TMP9, TMP9, TMP12)		# if (tmp11) { s4 = 0; }
+NOT(TMP7, TMP10)					# TMP10 = (S2 == 0)
+AND(TMP11, TMP10, TMP11)			# TMP11 = ((Tкуп <= Tуст - 1) || (Tнар < 18)) && (S4 == 1) && (S2 == 0)
 MUX2(TMP11, TMP23, TMP23, TMP12)	# if (tmp11) { ind4 = 0; }
 
 MOVE(TMP6, S1)
