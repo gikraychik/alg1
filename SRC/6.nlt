@@ -45,10 +45,12 @@ LE(TMP1, TMP2, TMP12)				# TMP12 = (Tкуп <= Tуст)
 NOT(TMP10, TMP10)					# TMP10 = (Tнар < 15)
 OR(TMP12, TMP10, TMP12)				# TMP12 = (Tкуп <= Tуст) || (Tнар < 15)
 AND(TMP12, TMP7, TMP12)				# TMP12 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2 == 1)
+NOT(TMP8, TMP10)					# TMP10 = (S3 == 0)
+AND(TMP12, TMP10, TMP12)			# TMP10 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2 == 1) && (S3 == 0)
 IMOVE(0, TMP13)						# TMP13 = 0
 MUX2(TMP12, TMP7, TMP7, TMP13)		# if (tmp12) { tmp7 = 0; } выключение реле 2
 NOT(TMP9, TMP13)					# TMP13 = (S4 == 0)
-AND(TMP12, TMP13, TMP12)			# TMP12 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2 == 1) && (S4 == 0)
+AND(TMP12, TMP13, TMP12)			# TMP12 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2 == 1) && (S3 == 0) && (S4 == 0)
 MUX2(TMP12, TMP23, TMP23, TMP13)	# if (tmp12) { tmp23 = 0; } выключение индикатора 4
 
 NOT(TIMER, TMP13)					# TMP13 = !TIMER
@@ -112,7 +114,7 @@ MUX2(TMP13, TMP24, TMP24, TMP12)	# if (tmp13) { ind5 = 1; }
 IMOVE(0, TMP12)						# TMP12 = 0
 MUX2(TMP13, TIMER, TIMER, TMP12)	# if (tmp13) { TIMER = 0; }
 
-GE(TMP0, TMP2, TMP10)				# TMP10 = (Tкуп >= Tуст)
+GE(TMP1, TMP2, TMP10)				# TMP10 = (Tкуп >= Tуст)
 IMOVE(0, TMP11)						# TMP11 = 0
 IMOVE(5, TMP12)						# TMP12 = 5
 SUB(TMP11, TMP12, TMP11)			# TMP11 = -5
