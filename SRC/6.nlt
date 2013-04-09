@@ -11,9 +11,40 @@ GE(T1_LAST, TMP2, TMP3)				# TMP3 = (T1_LAST >= 60)
 GE(T2_LAST, TMP2, TMP4)				# TMP4 = (T2_LAST >= 60)
 
 IMOVE(24, TMP2)						# TMP2 - температура при ошибке датчика
+MUX2(TMP3, TMP0, TMP0, TMP2)		# if (tmp3) { T1 = 24; }
+MUX2(TMP3, MEM_T1, MEM_T1, TMP0)	# if (tmp3) { MEM_T1 = T1; }
+NOT(TMP3, TMP3)						# TMP3 = (T1_LAST < 60)
+IMOVE(0, TMP2)						# TMP2 = 0
+IMOVE(40, TMP5)						# TMP5 = 40
+SUB(TMP2, TMP5, TMP2)				# TMP2 = -40
+GE(TMP0, TMP2, TMP5)				# TMP5 = (T1 >= -40)
+IMOVE(50, TMP2)						# TMP2 = 50
+LE(TMP0, TMP2, TMP2)				# TMP2 = (T1 <= 50)
+AND(TMP5, TMP2, TMP5)				# TMP5 = (T1 >= -40) && (T1 <= 50)
+AND(TMP3, TMP5, TMP6)				# TMP6 = (T1_LAST < 60) && (T1 >= -40) && (T1 <= 50)
+MUX2(TMP6, MEM_T1, MEM_T1, TMP0)	# if (tmp6) { MEM_T1 = T1; }
+NOT(TMP5, TMP5)						# TMP5 = !((T1 >= -40) && (T1 <= 50))
+AND(TMP3, TMP5, TMP6)				# TMP6 = (T1_LAST < 60) && !((T1 >= -40) && (T1 <= 50))
+MUX2(TMP6, TMP0, TMP0, MEM_T1)		# if (tmp6) { T1 = MEM_T1; }
+NOT(TMP3, TMP3)						# TMP3 = (T1_LAST >= 60)
 
-MUX2(TMP3, TMP0, TMP0, TMP2)		# если ошибка с датчиком, TMP0 = 24 (T1)
-MUX2(TMP4, TMP1, TMP1, TMP2)		# если ошибка с датчиком, TMP1 = 24 (T2)
+IMOVE(24, TMP2)						# TMP2 - температура при ошибке датчика
+MUX2(TMP4, TMP1, TMP1, TMP2)		# if (tmp4) { T2 = 24; }
+MUX2(TMP4, MEM_T2, MEM_T2, TMP1)	# if (tmp4) { MEM_T2 = T2; }
+NOT(TMP4, TMP4)						# TMP4 = (T2_LAST < 60)
+IMOVE(0, TMP2)						# TMP2 = 0
+IMOVE(40, TMP5)						# TMP5 = 40
+SUB(TMP2, TMP5, TMP2)				# TMP2 = -40
+GE(TMP1, TMP2, TMP5)				# TMP5 = (T2 >= -40)
+IMOVE(50, TMP2)						# TMP2 = 50
+LE(TMP1, TMP2, TMP2)				# TMP2 = (T2 <= 50)
+AND(TMP5, TMP2, TMP5)				# TMP5 = (T2 >= -40) && (T2 <= 50)
+AND(TMP4, TMP5, TMP6)				# TMP6 = (T2_LAST < 60) && (T2 >= -40) && (T2 <= 50)
+MUX2(TMP6, MEM_T2, MEM_T2, TMP1)	# if (tmp6) { MEM_T2 = T2; }
+NOT(TMP5, TMP5)						# TMP5 = !((T2 >= -40) && (T2 <= 50))
+AND(TMP4, TMP5, TMP6)				# TMP6 = (T2_LAST < 60) && !((T2 >= -40) && (T2 <= 50))
+MUX2(TMP6, TMP1, TMP1, MEM_T2)		# if (tmp6) { T2 = MEM_T2; }
+NOT(TMP4, TMP4)						# TMP4 = (T4_LAST >= 60)
 
 MOVE(T3, TMP2)						# TMP2 = T3 - желаемая температура в салоне (Tуст)
 

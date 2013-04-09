@@ -48,7 +48,7 @@ MUX2(TMP3, TMP17, TMP17, TMP25)		# if (video_mode == 3) { tmp17 = tmp25; }
 CD(TMP17, TMP0)						# TMP0 - LED1, TMP1 - LED2, TMP2 - LED3
 
 IMOVE(0x9E, TMP24)					# TMP24 = 0x9E 'E'
-MUX2(TMP12, TMP0, TMP0, TMP24)		# if (tmp12) { tmp18 = 'E' }
+MUX2(TMP12, TMP0, TMP0, TMP24)		# if (tmp12) { tmp0 = 'E' }
 IMOVE(0xA, TMP24)					# TMP24 = 0xA
 MUX2(TMP12, TMP1, TMP1, TMP24)		# 'r'
 MUX2(TMP12, TMP2, TMP2, TMP24)		# 'r' 

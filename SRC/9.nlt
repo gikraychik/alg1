@@ -1,0 +1,14 @@
+# инициализация температур MEM_T1 и MEM_T2
+
+INCLUDE(regs.inc)
+
+IMOVE(60, TMP0)							# TMP0 = 60 seconds
+GE(T1_LAST, TMP0, TMP1)					# TMP1 = (T1_LAST >= 60)
+GE(T2_LAST, TMP0, TMP2)					# TMP2 = (T2_LAST >= 60)
+IEQ(0, T1_STATUS, TMP3)					# TMP3 = (T1_STATUS == 0)
+IEQ(0, T2_STATUS, TMP4)					# TMP4 = (T2_STATUS == 0)
+AND(TMP3, TMP4, TMP5)					# TMP5 = (T1_STATUS == 0) && (T2_STATUS == 0)
+OR(TMP5, TMP1, TMP5)					# TMP5 = ((T1_STATUS == 0) && (T2_STATUS == 0)) || (T1_LAST >= 60)
+OR(TMP5, TMP2, TMP5)					# TMP5 = ((T1_STATUS == 0) && (T2_STATUS == 0)) || (T1_LAST >= 60) || (T2_LAST >= 60)
+
+IMUX2(TMP5, NETLIST_SELECT, 9, 1)

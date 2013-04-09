@@ -13,6 +13,8 @@ IMOVE(0, VIDEO_MODE)	# добавлено для тестирования
 
 IMOVE(0, DOUT)
 IMOVE(0, TIMER)
+IMOVE(24, MEM_T1)
+IMOVE(24, MEM_T2)
 
 # проверка контрольной суммы
 # T3 + T4 + CTRL_STATE + EE_SUM = 0x3124
@@ -23,3 +25,4 @@ ADD(TMP0, EE_SUM, TMP0)
 IEQ(0x3124, TMP0, TMP0)
 
 IMUX2(TMP0, NETLIST_SELECT, 2, 1)
+# IMOVE(9, NETLIST_SELECT)

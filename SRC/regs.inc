@@ -150,3 +150,7 @@ TIMER2				@0x1B
 TIMER				@0x13
 
 DOUT	@0x74
+
+# the following variables should be used carefully
+MEM_T1	@0x90
+MEM_T2	@0x91
