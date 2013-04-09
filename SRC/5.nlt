@@ -18,8 +18,29 @@ GE(T2_LAST, TMP4, TMP6)				# TMP6 = (T2_LAST >= 60)
 NOT(TMP5, TMP7)						# TMP7 = !TMP5 <=> TMP7 = (T1_LAST < 60)
 NOT(TMP6, TMP8)						# TMP8 = !TMP6 <=> TMP8 = (T2_LAST < 60)
 
-AND(TMP0, TMP6, TMP9)				# TMP9 = (video_mode == 0) && (T2_LAST >= 60); error inside
-AND(TMP1, TMP5, TMP10)				# TMP10 = (video_mode == 1) && (T1_LAST >= 60); error outside
+IMOVE(0, TMP9)						# TMP9 = 0
+IMOVE(40, TMP10)					# TMP10 = 40
+SUB(TMP9, TMP10, TMP9)				# TMP9 = -40
+GE(TMP15, TMP9, TMP9)				# TMP9 = (T1 >= -40)
+IMOVE(50, TMP10)					# TMP10 = 50
+LE(TMP15, TMP10, TMP10)				# TMP10 = (T1 <= 550)
+AND(TMP9, TMP10, TMP9)				# TMP9 = (T1 >= -40) && (T1 <= 50)
+AND(TMP7, TMP9, TMP7)				# TMP7 = (T1_LAST < 60) && ((T1 >= -40) && (T1 <= 50))
+
+IMOVE(0, TMP9)						# TMP9 = 0
+IMOVE(40, TMP10)					# TMP10 = 40
+SUB(TMP9, TMP10, TMP9)				# TMP9 = -40
+GE(TMP16, TMP9, TMP9)				# TMP9 = (T2 >= -40)
+IMOVE(50, TMP10)					# TMP10 = 50
+LE(TMP16, TMP10, TMP10)				# TMP10 = (T2 <= 50)
+AND(TMP9, TMP10, TMP9)				# TMP9 = (T2 >= -40) && (T2 <= 50)
+AND(TMP8, TMP9, TMP8)				# TMP8 = (T2_LAST < 60) && (T2 >= -40) && (T2 <= 50)
+
+NOT(TMP7, TMP5)						# TMP5 = !((T1_LAST < 60) && (T1 >= -40) && (T1 <= 50))
+NOT(TMP8, TMP6)						# TMP6 = !((T2_LAST < 60) && (T2 >= -40) && (T2 <= 50))
+
+AND(TMP0, TMP6, TMP9)				# TMP9 = (video_mode == 0) && !((T2_LAST < 60) && (T2 >= -40) && (T2 <= 50)); error inside
+AND(TMP1, TMP5, TMP10)				# TMP10 = (video_mode == 1) && !((T1_LAST < 60) && (T1 >= -40) && (T1 <= 50)); error outside
 
 IMOVE(0, TMP24)						# TMP24 = 0
 # TMP11 - первый символ экрана LED0
@@ -36,7 +57,7 @@ IMOVE(0, TMP24)						# TMP24 = 0
 MUX2(TMP12, TMP11, TMP11, TMP24)	# if (tmp12) { tmp11 = ''; }
 
 AND(TMP0, TMP8, TMP13)				# TMP13 = (video_mode == 0) && (T2_LAST < 60)
-AND(TMP1, TMP7, TMP14)				# TMP14 = (video_mode == 1) && (T1_LAST < 60)
+AND(TMP1, TMP7, TMP14)				# TMP14 = (video_mode == 1) && ((T1_LAST < 60) && ((T1 >= -40) && (T1 <= 50)))
 
 # TMP17 - выводимая температура
 IMOVE(70, TMP24)					# TMP24 = 70
