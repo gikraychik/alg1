@@ -152,5 +152,7 @@ TIMER				@0x13
 DOUT	@0x74
 
 # the following variables should be used carefully
-MEM_T1	@0x90
-MEM_T2	@0x91
+MEM_T1		@0x90
+MEM_T2		@0x91
+ADMIN_T1	@0x92
+ADMIN_T2	@0x94

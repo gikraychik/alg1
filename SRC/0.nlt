@@ -15,6 +15,7 @@ IMOVE(0, DOUT)
 IMOVE(0, TIMER)
 IMOVE(24, MEM_T1)
 IMOVE(24, MEM_T2)
+IMOVE(0, PWM_PERCENT)
 
 # проверка контрольной суммы
 # T3 + T4 + CTRL_STATE + EE_SUM = 0x3124

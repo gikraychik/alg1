@@ -186,6 +186,59 @@ NOT(TMP7, TMP10)					# TMP10 = (S2 == 0)
 AND(TMP11, TMP10, TMP11)			# TMP11 = ((Tкуп <= Tуст - 1) || (Tнар < 18)) && (S4 == 1) && (S2 == 0)
 MUX2(TMP11, TMP23, TMP23, TMP12)	# if (tmp11) { ind4 = 0; }
 
+# TMP10 - аналоговый выход
+IMOVE(40, TMP11)					# TMP11 = 40
+GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 40)
+IMOVE(4, TMP11)						# TMP11 = 4
+MUX2(TMP12, TMP10, TMP10, TMP11)	# if (Tнар >= 40) { TMP10 = 4; }
+
+IMOVE(38, TMP11)					# TMP11 = 38
+GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 38)
+IMOVE(40, TMP11)					# TMP11 = 40
+LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 40)
+AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 38) && (Tнар < 40)
+IMOVE(5, TMP11)						# TMP11 = 5
+MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 38) && (Tнар < 40)) { TMP10 = 5; }
+
+IMOVE(36, TMP11)					# TMP11 = 36
+GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 36)
+IMOVE(38, TMP11)					# TMP11 = 38
+LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 38)
+AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 36) && (Tнар < 38)
+IMOVE(6, TMP11)						# TMP11 = 6
+MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 36) && (Tнар < 38)) { TMP10 = 6; }
+
+IMOVE(34, TMP11)					# TMP11 = 34
+GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 34)
+IMOVE(36, TMP11)					# TMP11 = 36
+LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 36)
+AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 34) && (Tнар < 36)
+IMOVE(7, TMP11)						# TMP11 = 7
+MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 34) && (Tнар < 36)) { TMP10 = 7; }
+
+IMOVE(32, TMP11)					# TMP11 = 32
+GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 32)
+IMOVE(34, TMP11)					# TMP11 = 34
+LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 34)
+AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 32) && (Tнар < 34)
+IMOVE(8, TMP11)						# TMP11 = 8
+MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 32) && (Tнар < 34)) { TMP10 = 8; }
+
+IMOVE(30, TMP11)					# TMP11 = 30
+GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 30)
+IMOVE(32, TMP11)					# TMP11 = 32
+LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 32)
+AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 30) && (Tнар < 32)
+IMOVE(9, TMP11)						# TMP11 = 9
+MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 30) && (Tнар < 32)) { TMP10 = 9; }
+
+IMOVE(30, TMP11)					# TMP11 = 30
+LT(TMP0, TMP11, TMP12)				# TMP12 = (Tнар < 30)
+IMOVE(10, TMP11)					# TMP11 = 10
+MUX2(TMP12, TMP10, TMP10, TMP11)	# if (Tнар < 30) { TMP10 = 10; }
+
+MOVE(TMP10, PWM_PERCENT)			# PWM_PERCENT = TMP10
+
 MOVE(TMP6, S1)
 MOVE(TMP7, S2)
 MOVE(TMP8, S3)

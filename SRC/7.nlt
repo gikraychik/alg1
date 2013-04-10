@@ -13,6 +13,26 @@ MOVE(TMP0, TMP11)						# TMP11 = VIDEO_MODE (доп. ячейка для VIDEO_MODE)
 IEQ(3, VIDEO_MODE, TMP4)				# TMP4 = (VIDEO_MODE == 3)
 MUX2(TMP4, TMP25, T3, TMP25)			# if (VIDEO_MODE != 3) { tmp25 = t3; }
 
+# проверка на административный режим
+IEQ(0, VIDEO_MODE, TMP4)				# TMP4 = (VIDEO_MODE == 0)
+AND(LONG_BTN_ENTER, TMP4, TMP4)			# TMP4 = (VIDEO_MODE == 0) && LONG_BTN_ENTER
+IEQ(20, ADMIN_T1, TMP5)					# TMP5 = (ADMIN_T1 == 20)
+IMOVE(10, TMP6)							# TMP6 = 10
+AND(TMP4, TMP5, TMP7)					# TMP7 = (VIDEO_MODE == 0) && LONG_BTN_ENTER && (ADMIN_T1 == 20)
+MUX2(TMP7, ADMIN_T1, ADMIN_T1, TMP6)	# if (tmp7) { ADMIN_T1 = 10; }
+NOT(TMP5, TMP5)							# TMP5 = !(ADMIN_T1 == 20)
+AND(TMP4, TMP5, TMP7)					# TMP7 = (VIDEO_MODE == 0) && LONG_BTN_ENTER && !(ADMIN_T1 == 20)
+IMOVE(20, TMP6)							# TMP6 = 20
+MUX2(TMP7, ADMIN_T1, ADMIN_T1, TMP6)	# if (tmp7) { ADMIN_T1 = 20; }
+IEQ(28, ADMIN_T2, TMP5)					# TMP5 = (ADMIN_T2 == 28)
+AND(TMP4, TMP5, TMP7)					# TMP7 = (VIDEO_MODE == 0) && LONG_BTN_ENTER && (ADMIN_T2 == 28)
+IMOVE(30, TMP6)							# TMP6 = 30
+MUX2(TMP7, ADMIN_T2, ADMIN_T2, TMP6)	# if (tmp7) { ADMIN_T2 = 30; }
+NOT(TMP5, TMP5)							# TMP5 = (ADMIN_T2 != 28)
+AND(TMP4, TMP5, TMP7)					# TMP7 = (VIDEO_MODE == 0) && LONG_BTN_ENTER && (ADMIN_T2 != 28)
+IMOVE(28, TMP6)							# TMP6 = 28
+MUX2(TMP7, ADMIN_T2, ADMIN_T2, TMP6)	# if (tmp7) { ADMIN_T2 = 28; }
+
 # TMP4 - TMP7 являются константами. Созданы для сокращения объема кода
 IMOVE(0, TMP4)							# TMP4 = 0
 IMOVE(1, TMP5)							# TMP5 = 1
