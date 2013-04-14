@@ -134,10 +134,10 @@ EE_SUM		@0xC4
 TIMER0				@0x10
 TIMER1				@0x11
 
-S2_OLD				@0x12
+S2_OLD				@0x09
 I5_OLD				@0x13
-S3_OLD				@0x14
-S4_OLD				@0x15
+S3_OLD				@0x0A
+S4_OLD				@0x0B
 #Tin_OLD				@0x16
 
 EDT					@0x17
@@ -147,12 +147,12 @@ EDT					@0x17
 #Tout_OLD			@0x1A
 
 TIMER2				@0x1B
-TIMER				@0x13
+TIMER				@0x18
 
 DOUT	@0x74
 
 # the following variables should be used carefully
-MEM_T1		@0x90
-MEM_T2		@0x91
-ADMIN_T1	@0x92
-ADMIN_T2	@0x94
+MEM_T1		@0x17
+MEM_T2		@0x16
+ADMIN_T1	@0x15
+ADMIN_T2	@0x14

@@ -1,0 +1,20 @@
+# состояние паузы
+# TMP0 - адрес возврата
+# TIMER_SEC - уже запущен из другого состояния
+
+INCLUDE(regs.inc)
+
+IMOVE(0, LED0)								# LED0 = ''
+IMOVE(0x2, LED1)							# LED1 = '-'
+IMOVE(0x2, LED2)							# LED2 = '-'
+IMOVE(0, LED3)								# LED3 = ''
+
+IMOVE(9, NETLIST_SELECT)
+
+IEQ(0, TIMER_SEC, TMP1)						# TMP1 = (TIMER_SEC == 0)
+IMOVE(9, TMP2)								# TMP2 = 9
+MUX2(TMP1, NETLIST_SELECT, TMP2, TMP0)		# if (TIMER_SEC == 0) { NETLIST_SELECT = TMP0; } else { NETLIST_SELECT = 9; }
+IEQ(3, NETLIST_SELECT, TMP2)				# TMP2 = (NETLIST_SELECT == 3)
+IMOVE(5, TMP3)								# TMP3 = 5
+# if (NETLIST_SELECT == 3) { TMP0 = 5; }
+MUX2(TMP2, TMP0, TMP0, TMP3)

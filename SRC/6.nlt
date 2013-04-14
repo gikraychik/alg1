@@ -1,5 +1,5 @@
 # установка реле
-# TMP19 = TIMER (1 - установлен, 0 - не установлен)
+# TMP24 = TIMER (1 - установлен, 0 - не установлен)
 
 INCLUDE(regs.inc)
 
@@ -10,6 +10,11 @@ IMOVE(60, TMP2)						# TMP2 - 60 seconds
 GE(T1_LAST, TMP2, TMP3)				# TMP3 = (T1_LAST >= 60)
 GE(T2_LAST, TMP2, TMP4)				# TMP4 = (T2_LAST >= 60)
 
+MOVE(S2, S2_OLD)
+MOVE(S3, S3_OLD)
+MOVE(S4, S4_OLD)
+
+# стабилизация моментных скачков температуры
 IMOVE(24, TMP2)						# TMP2 - температура при ошибке датчика
 MUX2(TMP3, TMP0, TMP0, TMP2)		# if (tmp3) { T1 = 24; }
 MUX2(TMP3, MEM_T1, MEM_T1, TMP0)	# if (tmp3) { MEM_T1 = T1; }
@@ -45,209 +50,189 @@ NOT(TMP5, TMP5)						# TMP5 = !((T2 >= -40) && (T2 <= 50))
 AND(TMP4, TMP5, TMP6)				# TMP6 = (T2_LAST < 60) && !((T2 >= -40) && (T2 <= 50))
 MUX2(TMP6, TMP1, TMP1, MEM_T2)		# if (tmp6) { T2 = MEM_T2; }
 NOT(TMP4, TMP4)						# TMP4 = (T4_LAST >= 60)
+# конец стабилизации
 
 MOVE(T3, TMP2)						# TMP2 = T3 - желаемая температура в салоне (Tуст)
 
-# реле
-MOVE(S1, TMP6)						# TMP6 = S1
-MOVE(S2, TMP7)						# TMP7 = S2
-MOVE(S3, TMP8)						# TMP8 = S3
-MOVE(S4, TMP9)						# TMP9 = S4
-
-# индикаторы
-MOVE(IND1, TMP20)					# TMP20 = IND1
-MOVE(IND2, TMP21)					# TMP21 = IND2
-MOVE(IND3, TMP22)					# TMP22 = IND3
-MOVE(IND4, TMP23)					# TMP23 = IND4
-MOVE(IND5, TMP24)					# TMP24 = IND5
-
-# начало анализа
-
 # охлаждение ПКА
-IMOVE(15, TMP10)					# TMP10 = 15
-GE(TMP0, TMP10, TMP10)				# TMP10 = (Tнар >= 15)
+IMOVE(15, TMP3)						# TMP3 = 15
+GE(TMP0, TMP3, TMP3)				# TMP3 = (Tнар >= 15)
 
-IMOVE(1, TMP11)						# TMP11 = 1
-ADD(TMP2, TMP11, TMP11)				# TMP11 = Tуст + 1
-GE(TMP1, TMP11, TMP11)				# TMP11 = (Tкуп >= Tуст + 1)
-AND(TMP10, TMP11, TMP11)			# TMP11 = (Tнар >= 15) && (Tкуп >= Tуст + 1)
+IMOVE(1, TMP4)						# TMP4 = 1
+ADD(TMP2, TMP4, TMP4)				# TMP4 = Tуст + 1
+GE(TMP1, TMP4, TMP4)				# TMP4 = (Tкуп >= Tуст + 1)
+AND(TMP3, TMP4, TMP4)				# TMP4 = (Tнар >= 15) && (Tкуп >= Tуст + 1)
 
-LE(TMP1, TMP2, TMP12)				# TMP12 = (Tкуп <= Tуст)
-NOT(TMP10, TMP10)					# TMP10 = (Tнар < 15)
-OR(TMP12, TMP10, TMP12)				# TMP12 = (Tкуп <= Tуст) || (Tнар < 15)
-AND(TMP12, TMP7, TMP12)				# TMP12 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2 == 1)
-NOT(TMP8, TMP10)					# TMP10 = (S3 == 0)
-AND(TMP12, TMP10, TMP12)			# TMP10 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2 == 1) && (S3 == 0)
-IMOVE(0, TMP13)						# TMP13 = 0
-MUX2(TMP12, TMP7, TMP7, TMP13)		# if (tmp12) { tmp7 = 0; } выключение реле 2
-NOT(TMP9, TMP13)					# TMP13 = (S4 == 0)
-AND(TMP12, TMP13, TMP12)			# TMP12 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2 == 1) && (S3 == 0) && (S4 == 0)
-MUX2(TMP12, TMP23, TMP23, TMP13)	# if (tmp12) { tmp23 = 0; } выключение индикатора 4
+LE(TMP1, TMP2, TMP5)				# TMP5 = (Tкуп <= Tуст)
+NOT(TMP3, TMP3)						# TMP3 = (Tнар < 15)
+OR(TMP5, TMP3, TMP5)				# TMP5 = (Tкуп <= Tуст) || (Tнар < 15)
+AND(TMP5, S2_OLD, TMP5)				# TMP5 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2_OLD == 1)
+NOT(S3_OLD, TMP3)					# TMP3 = (S3_OLD == 0)
+AND(TMP5, TMP3, TMP5)				# TMP5 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2_OLD == 1) && (S3_OLD == 0)
+IMOVE(0, TMP6)						# TMP6 = 0
+MUX2(TMP5, S2_OLD, S2_OLD, TMP6)	# if (tmp5) { S2_OLD = 0; } выключение реле 2
+NOT(S4_OLD, TMP6)					# TMP6 = (S4_OLD == 0)
+AND(TMP5, TMP6, TMP5)				# TMP5 = ((Tкуп <= Tуст) || (Tнар < 15)) && (S2_OLD == 1) && (S3_OLD == 0) && (S4_OLD == 0)
+IMOVE(0, TMP6)						# TMP6 = 0
+MUX2(TMP5, IND4, IND4, TMP6)		# if (tmp5) { IND4 = 0; } выключение индикатора 4
 
-NOT(TIMER, TMP13)					# TMP13 = !TIMER
-AND(TMP11, TMP13, TMP13)			# TMP13 = (Tнар >= 15) && (Tкуп >= Tуст + 1) && !TIMER
-NOT(TMP7, TMP14)					# TMP14 = (S2 == 0)
-AND(TMP13, TMP14, TMP13)			# TMP13 = (Tнар >= 15) && (Tкуп >= Tуст + 1) && !TIMER && (S2 == 0)
-IMOVE(1, TMP14)						# TMP14 = 1
-MUX2(TMP13, TIMER, TIMER, TMP14)	# если выполнено TMP13, TIMER = 1; else TIMER = TIMER
-IMOVE(1500, TMP14)					# TMP14 = 120 seconds
-MUX2(TMP13, TIMER_MSEC, TIMER_MSEC, TMP14)	# если выполнено TMP13, TIMER_MSEC = 120 seconds; else TIMER_MSEC = TIMER_MSEC
+NOT(TIMER, TMP6)					# TMP6 = !TIMER
+AND(TMP4, TMP6, TMP6)				# TMP6 = (Tнар >= 15) && (Tкуп >= Tуст + 1) && !TIMER
+NOT(S2_OLD, TMP7)					# TMP7 = (S2_OLD == 0)
+AND(TMP6, TMP7, TMP6)				# TMP6 = (Tнар >= 15) && (Tкуп >= Tуст + 1) && !TIMER && (S2_OLD == 0)
+IMOVE(1, TMP7)						# TMP7 = 1
+MUX2(TMP6, TIMER, TIMER, TMP7)		# если выполнено TMP6, TIMER = 1; else TIMER = TIMER
+IMOVE(30000, TMP7)					# TMP7 = 120 seconds
+MUX2(TMP6, TIMER_MSEC, TIMER_MSEC, TMP7)	# если выполнено TMP6, TIMER_MSEC = 120 seconds; else TIMER_MSEC = TIMER_MSEC
 
-AND(TMP11, TIMER, TMP13)			# TMP13 = TMP11 && TIMER
-IEQ(0, TIMER_MSEC, TMP14)			# TMP14 = (TIMER_MSEC == 0)
+AND(TMP4, TIMER, TMP6)				# TMP6 = TMP4 && TIMER
+IEQ(0, TIMER_MSEC, TMP7)			# TMP7 = (TIMER_MSEC == 0)
 
-AND(TMP13, TMP14, TMP15)			# TMP15 = TMP13 && (TIMER_MSEC == 0)
-IMOVE(1, TMP12)						# TMP12 = 1
-MUX2(TMP15, TMP7, TMP7, TMP12)		# if (tmp15) { tmp7 = 1; } включение реле 2
-MUX2(TMP15, TMP23, TMP23, TMP12)	# if (tmp15) { tmp23 = 1; } включение индикатора 4
-IMOVE(0, TMP12)						# TMP12 = 0
-MUX2(TMP15, TIMER, TIMER, TMP12)	# if (tmp15) { TIMER = 0; } выключение таймера
+AND(TMP6, TMP7, TMP8)				# TMP8 = TMP6 && (TIMER_MSEC == 0)
+IMOVE(1, TMP5)						# TMP5 = 1
+MUX2(TMP8, S2_OLD, S2_OLD, TMP5)	# if (tmp8) { S2_OLD = 1; } включение реле 2
+MUX2(TMP8, IND4, IND4, TMP5)		# if (tmp8) { IND4 = 1; } включение индикатора 4
+IMOVE(0, TMP5)						# TMP5 = 0
+MUX2(TMP8, TIMER, TIMER, TMP5)		# if (tmp8) { TIMER = 0; } выключение таймера
 
 # нагрев ПКА
-IMOVE(5, TMP10)						# TMP10 = 5
-IMOVE(0, TMP11)						# TMP11 = 0
-SUB(TMP11, TMP10, TMP10)			# TMP10 = -5
-IMOVE(20, TMP11)					# TMP11 = 20
-LE(TMP10, TMP0, TMP10)				# TMP10 = (-5 <= Tнар)
-LT(TMP0, TMP11, TMP11)				# TMP11 = (Tнар < 20)
-AND(TMP10, TMP11, TMP10)			# TMP10 = (-5 <= Tнар) && (Tнар < 20)
-IMOVE(1, TMP11)						# TMP11 = 1
-SUB(TMP2, TMP11, TMP11)				# TMP11 = Tуст - 1
-LT(TMP1, TMP11, TMP11)				# TMP11 = (Tкуп < Tуст - 1)
-AND(TMP10, TMP11, TMP11)			# TMP11 = (-5 <= Tнар) && (Tнар < 20) && (Tкуп < Tуст - 1)
+IMOVE(5, TMP3)						# TMP3 = 5
+IMOVE(0, TMP4)						# TMP4 = 0
+SUB(TMP4, TMP3, TMP3)				# TMP3 = -5
+IMOVE(20, TMP4)						# TMP4 = 20
+LE(TMP3, TMP0, TMP3)				# TMP3 = (-5 <= Tнар)
+LT(TMP0, TMP4, TMP4)				# TMP4 = (Tнар < 20)
+AND(TMP3, TMP4, TMP3)				# TMP3 = (-5 <= Tнар) && (Tнар < 20)
+IMOVE(1, TMP4)						# TMP4 = 1
+SUB(TMP2, TMP4, TMP4)				# TMP4 = Tуст - 1
+LT(TMP1, TMP4, TMP4)				# TMP4 = (Tкуп < Tуст - 1)
+AND(TMP3, TMP4, TMP4)				# TMP4 = (-5 <= Tнар) && (Tнар < 20) && (Tкуп < Tуст - 1)
 
-IMOVE(1, TMP12)						# TMP12 = 1
-AND(TMP11, TMP7, TMP13)				# TMP13 = TMP11 && (S2 == 1)
-MUX2(TMP13, TMP8, TMP8, TMP12)		# if (tmp13) { tmp8 = 1; } включение реле 3 (реле 2 уже работает)
-MUX2(TMP13, TMP24, TMP24, TMP12)	# if (tmp13) { tmp24 = 1; } включение индикатора 5
-IMOVE(0, TMP12)						# TMP12 = 0
-MUX2(TMP13, TIMER, TIMER, TMP12)	# if (tmp13) { TIMER = 0; }
+IMOVE(1, TMP5)						# TMP5 = 1
+AND(TMP4, S2_OLD, TMP6)				# TMP6 = TMP4 && (S2_OLD == 1)
+MUX2(TMP6, S3_OLD, S3_OLD, TMP5)	# if (TMP6) { S3_OLD = 1; } включение реле 3 (реле 2 уже работает)
+MUX2(TMP6, IND5, IND5, TMP5)		# if (TMP6) { IND5 = 1; } включение индикатора 5
+IMOVE(0, TMP5)						# TMP5 = 0
+MUX2(TMP6, TIMER, TIMER, TMP5)		# if (TMP6) { TIMER = 0; }
 
-NOT(TMP7, TMP12)					# TMP12 = (S2 == 0)
-AND(TMP11, TMP12, TMP13)			# TMP13 = TMP11 && (S2 == 0)
+NOT(S2_OLD, TMP5)					# TMP5 = (S2_OLD == 0)
+AND(TMP4, TMP5, TMP6)				# TMP6 = TMP4 && (S2_OLD == 0)
 
-NOT(TIMER, TMP12)					# TMP12 = !TIMER
-AND(TMP13, TMP12, TMP14)			# TMP14 = TMP11 && (S2 == 0) && (!TIMER)
-NOT(TMP8, TMP12)					# TMP12 = (S3 == 0)
-AND(TMP14, TMP12, TMP14)			# TMP14 = TMP11 && (S2 == 0) && (!TIMER) && (S3 == 0)
-IMOVE(1, TMP12)						# TMP12 = 1
-MUX2(TMP14, TIMER, TIMER, TMP12)	# if (tmp14) { timer = 1; } перезапуск таймера
-IMOVE(1500, TMP12)					# TMP12 = 120 seconds
-MUX2(TMP14, TIMER_MSEC, TIMER_MSEC, TMP12)	# if (tmp14) { TIMER_MSEC = 120 seconds; } перезапуск таймера
+NOT(TIMER, TMP5)					# TMP5 = !TIMER
+AND(TMP6, TMP5, TMP7)				# TMP7 = TMP4 && (S2_OLD == 0) && (!TIMER)
+NOT(S3_OLD, TMP5)					# TMP5 = (S3_OLD == 0)
+AND(TMP7, TMP5, TMP7)				# TMP7 = TMP4 && (S2_OLD == 0) && (!TIMER) && (S3_OLD == 0)
+IMOVE(1, TMP5)						# TMP5 = 1
+MUX2(TMP7, TIMER, TIMER, TMP5)		# if (TMP7) { timer = 1; } перезапуск таймера
+IMOVE(30000, TMP5)					# TMP5 = 120 seconds
+MUX2(TMP7, TIMER_MSEC, TIMER_MSEC, TMP5)	# if (TMP7) { TIMER_MSEC = 120 seconds; } перезапуск таймера
 
-AND(TMP13, TIMER, TMP13)			# TMP13 = TMP13 && TIMER
-IEQ(0, TIMER_MSEC, TMP12)			# TMP12 = (TIMER_MSEC == 0)
-AND(TMP13, TMP12, TMP13)			# TMP13 = TMP13 && (TIMER_MSEC == 0)
-IMOVE(1, TMP12)						# TMP12 = 1
-MUX2(TMP13, TMP7, TMP7, TMP12)		# if (tmp13) { s2 = 1; }
-MUX2(TMP13, TMP8, TMP8, TMP12)		# if (tmp13) { s3 = 1; }
-MUX2(TMP13, TMP24, TMP24, TMP12)	# if (tmp13) { ind5 = 1; }
-IMOVE(0, TMP12)						# TMP12 = 0
-MUX2(TMP13, TIMER, TIMER, TMP12)	# if (tmp13) { TIMER = 0; }
+AND(TMP6, TIMER, TMP6)				# TMP6 = TMP6 && TIMER
+IEQ(0, TIMER_MSEC, TMP5)			# TMP5 = (TIMER_MSEC == 0)
+AND(TMP6, TMP5, TMP6)				# TMP6 = TMP6 && (TIMER_MSEC == 0)
+IMOVE(1, TMP5)						# TMP5 = 1
+MUX2(TMP6, S2_OLD, S2_OLD, TMP5)	# if (TMP6) { S2_OLD = 1; }
+MUX2(TMP6, S3_OLD, S3_OLD, TMP5)	# if (TMP6) { S3_OLD = 1; }
+MUX2(TMP6, IND5, IND5, TMP5)		# if (TMP6) { ind5 = 1; }
+IMOVE(0, TMP5)						# TMP5 = 0
+MUX2(TMP6, TIMER, TIMER, TMP5)		# if (TMP6) { TIMER = 0; }
 
-GE(TMP1, TMP2, TMP10)				# TMP10 = (Tкуп >= Tуст)
-IMOVE(0, TMP11)						# TMP11 = 0
-IMOVE(5, TMP12)						# TMP12 = 5
-SUB(TMP11, TMP12, TMP11)			# TMP11 = -5
-LT(TMP0, TMP11, TMP11)				# TMP11 = (Tнар < -5)
-OR(TMP10, TMP11, TMP10)				# TMP10 = (Tкуп >= Tуст) || (Tнар < -5)
-IMOVE(20, TMP11)					# TMP11 = 20
-GE(TMP0, TMP11, TMP11)				# TMP11 = (Tнар >= 20)
-OR(TMP10, TMP11, TMP11)				# TMP11 = (Tкуп >= Tуст) || (Tнар < -5) || (Tнар >= 20)
-AND(TMP11, TMP8, TMP11)				# TMP11 = ((Tкуп >= Tуст) || (Tнар < -5) || (Tнар >= 20)) && (S3 == 1)
+GE(TMP1, TMP2, TMP3)				# TMP3 = (Tкуп >= Tуст)
+IMOVE(0, TMP4)						# TMP4 = 0
+IMOVE(5, TMP5)						# TMP5 = 5
+SUB(TMP4, TMP5, TMP4)				# TMP4 = -5
+LT(TMP0, TMP4, TMP4)				# TMP4 = (Tнар < -5)
+OR(TMP3, TMP4, TMP3)				# TMP3 = (Tкуп >= Tуст) || (Tнар < -5)
+IMOVE(20, TMP4)						# TMP4 = 20
+GE(TMP0, TMP4, TMP4)				# TMP4 = (Tнар >= 20)
+OR(TMP3, TMP4, TMP4)				# TMP4 = (Tкуп >= Tуст) || (Tнар < -5) || (Tнар >= 20)
+AND(TMP4, S3_OLD, TMP4)				# TMP4 = ((Tкуп >= Tуст) || (Tнар < -5) || (Tнар >= 20)) && (S3_OLD == 1)
 
-IMOVE(0, TMP10)						# TMP10 = 0
-MUX2(TMP11, TMP7, TMP7, TMP10)		# if (tmp11) { s2 = 0; }
-MUX2(TMP11, TMP8, TMP8, TMP10)		# if (tmp11) { s3 = 0; }
-MUX2(TMP11, TMP24, TMP24, TMP10)	# if (tmp11) { ind5 = 0; }
+IMOVE(0, TMP3)						# TMP3 = 0
+MUX2(TMP4, S2_OLD, S2_OLD, TMP3)	# if (TMP4) { S2_OLD = 0; }
+MUX2(TMP4, S3_OLD, S3_OLD, TMP3)	# if (TMP4) { S3_OLD = 0; }
+MUX2(TMP4, IND5, IND5, TMP3)		# if (TMP4) { ind5 = 0; }
 
 # охлаждение ИА
-IMOVE(18, TMP10)					# TMP10 = 18
-GE(TMP0, TMP10, TMP10)				# TMP10 = (Tнар >= 18)
-IMOVE(1, TMP11)						# TMP11 = 1
-ADD(TMP2, TMP11, TMP11)				# TMP11 = Tуст + 1
-GE(TMP1, TMP11, TMP11)				# TMP11 = (Tкуп >= Tуст + 1)
-AND(TMP10, TMP11, TMP11)			# TMP11 = (Tнар >= 18) && (Tкуп >= Tуст + 1)
+IMOVE(18, TMP3)						# TMP3 = 18
+GE(TMP0, TMP3, TMP3)				# TMP3 = (Tнар >= 18)
+IMOVE(1, TMP4)						# TMP4 = 1
+ADD(TMP2, TMP4, TMP4)				# TMP4 = Tуст + 1
+GE(TMP1, TMP4, TMP4)				# TMP4 = (Tкуп >= Tуст + 1)
+AND(TMP3, TMP4, TMP4)				# TMP4 = (Tнар >= 18) && (Tкуп >= Tуст + 1)
 
-IMOVE(1, TMP12)						# TMP12 = 1
-MUX2(TMP11, TMP9, TMP9, TMP12)		# if (tmp11) { s4 = 1; }
-MUX2(TMP11, TMP23, TMP23, TMP12)	# if (tmp11) { ind4 = 1; }
+IMOVE(1, TMP5)						# TMP5 = 1
+MUX2(TMP4, S4_OLD, S4_OLD, TMP5)	# if (TMP4) { S4_OLD = 1; }
+MUX2(TMP4, IND4, IND4, TMP5)		# if (TMP4) { ind4 = 1; }
 
-IMOVE(1, TMP10)						# TMP10 = 1
-SUB(TMP2, TMP10, TMP10)				# TMP10 = Tуст - 1
-LE(TMP1, TMP10, TMP11)				# TMP11 = (Tкуп <= Tуст - 1)
-IMOVE(18, TMP10)					# TMP10 = 18
-LT(TMP0, TMP10, TMP10)				# TMP10 = (Tнар < 18)
-OR(TMP11, TMP10, TMP11)				# TMP11 = (Tкуп <= Tуст - 1) || (Tнар < 18)
-AND(TMP11, TMP9, TMP11)				# TMP11 = ((Tкуп <= Tуст - 1) || (Tнар < 18)) && (S4 == 1)
-IMOVE(0, TMP12)						# TMP12 = 0
-MUX2(TMP11, TMP9, TMP9, TMP12)		# if (tmp11) { s4 = 0; }
-NOT(TMP7, TMP10)					# TMP10 = (S2 == 0)
-AND(TMP11, TMP10, TMP11)			# TMP11 = ((Tкуп <= Tуст - 1) || (Tнар < 18)) && (S4 == 1) && (S2 == 0)
-MUX2(TMP11, TMP23, TMP23, TMP12)	# if (tmp11) { ind4 = 0; }
+IMOVE(1, TMP3)						# TMP3 = 1
+SUB(TMP2, TMP3, TMP3)				# TMP3 = Tуст - 1
+LE(TMP1, TMP3, TMP4)				# TMP4 = (Tкуп <= Tуст - 1)
+IMOVE(18, TMP3)						# TMP3 = 18
+LT(TMP0, TMP3, TMP3)				# TMP3 = (Tнар < 18)
+OR(TMP4, TMP3, TMP4)				# TMP4 = (Tкуп <= Tуст - 1) || (Tнар < 18)
+AND(TMP4, S4_OLD, TMP4)				# TMP4 = ((Tкуп <= Tуст - 1) || (Tнар < 18)) && (S4_OLD == 1)
+IMOVE(0, TMP5)						# TMP5 = 0
+MUX2(TMP4, S4_OLD, S4_OLD, TMP5)	# if (TMP4) { S4_OLD = 0; }
+NOT(S2_OLD, TMP3)					# TMP3 = (S2_OLD == 0)
+AND(TMP4, TMP3, TMP4)				# TMP4 = ((Tкуп <= Tуст - 1) || (Tнар < 18)) && (S4_OLD == 1) && (S2_OLD == 0)
+MUX2(TMP4, IND4, IND4, TMP5)		# if (TMP4) { ind4 = 0; }
 
-# TMP10 - аналоговый выход
-IMOVE(40, TMP11)					# TMP11 = 40
-GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 40)
-IMOVE(4, TMP11)						# TMP11 = 4
-MUX2(TMP12, TMP10, TMP10, TMP11)	# if (Tнар >= 40) { TMP10 = 4; }
+# TMP3 - аналоговый выход
+IMOVE(38, TMP4)						# TMP4 = 38
+GE(TMP0, TMP4, TMP5)				# TMP5 = (Tнар >= 38)
+IMOVE(4, TMP4)						# TMP4 = 4
+MUX2(TMP5, TMP3, TMP3, TMP4)		# if (Tнар >= 38) { TMP3 = 4; }
 
-IMOVE(38, TMP11)					# TMP11 = 38
-GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 38)
-IMOVE(40, TMP11)					# TMP11 = 40
-LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 40)
-AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 38) && (Tнар < 40)
-IMOVE(5, TMP11)						# TMP11 = 5
-MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 38) && (Tнар < 40)) { TMP10 = 5; }
+IMOVE(36, TMP4)						# TMP4 = 36
+GE(TMP0, TMP4, TMP5)				# TMP5 = (Tнар >= 36)
+IMOVE(38, TMP4)						# TMP4 = 38
+LT(TMP0, TMP4, TMP6)				# TMP6 = (Tнар < 38)
+AND(TMP5, TMP6, TMP5)				# TMP5 = (Tнар >= 36) && (Tнар < 38)
+IMOVE(5, TMP4)						# TMP4 = 5
+MUX2(TMP5, TMP3, TMP3, TMP4)		# if ((Tнар >= 36) && (Tнар < 38)) { TMP3 = 5; }
 
-IMOVE(36, TMP11)					# TMP11 = 36
-GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 36)
-IMOVE(38, TMP11)					# TMP11 = 38
-LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 38)
-AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 36) && (Tнар < 38)
-IMOVE(6, TMP11)						# TMP11 = 6
-MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 36) && (Tнар < 38)) { TMP10 = 6; }
+IMOVE(34, TMP4)						# TMP4 = 34
+GE(TMP0, TMP4, TMP5)				# TMP5 = (Tнар >= 34)
+IMOVE(36, TMP4)						# TMP4 = 36
+LT(TMP0, TMP4, TMP6)				# TMP6 = (Tнар < 36)
+AND(TMP5, TMP6, TMP5)				# TMP5 = (Tнар >= 34) && (Tнар < 36)
+IMOVE(6, TMP4)						# TMP4 = 6
+MUX2(TMP5, TMP3, TMP3, TMP4)		# if ((Tнар >= 34) && (Tнар < 36)) { TMP3 = 6; }
 
-IMOVE(34, TMP11)					# TMP11 = 34
-GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 34)
-IMOVE(36, TMP11)					# TMP11 = 36
-LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 36)
-AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 34) && (Tнар < 36)
-IMOVE(7, TMP11)						# TMP11 = 7
-MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 34) && (Tнар < 36)) { TMP10 = 7; }
+IMOVE(32, TMP4)						# TMP4 = 32
+GE(TMP0, TMP4, TMP5)				# TMP5 = (Tнар >= 32)
+IMOVE(34, TMP4)						# TMP4 = 34
+LT(TMP0, TMP4, TMP6)				# TMP6 = (Tнар < 34)
+AND(TMP5, TMP6, TMP5)				# TMP5 = (Tнар >= 32) && (Tнар < 34)
+IMOVE(7, TMP4)						# TMP4 = 7
+MUX2(TMP5, TMP3, TMP3, TMP4)		# if ((Tнар >= 32) && (Tнар < 34)) { TMP3 = 7; }
 
-IMOVE(32, TMP11)					# TMP11 = 32
-GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 32)
-IMOVE(34, TMP11)					# TMP11 = 34
-LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 34)
-AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 32) && (Tнар < 34)
-IMOVE(8, TMP11)						# TMP11 = 8
-MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 32) && (Tнар < 34)) { TMP10 = 8; }
+IMOVE(30, TMP4)						# TMP4 = 30
+GE(TMP0, TMP4, TMP5)				# TMP5 = (Tнар >= 30)
+IMOVE(32, TMP4)						# TMP4 = 32
+LT(TMP0, TMP4, TMP6)				# TMP6 = (Tнар < 32)
+AND(TMP5, TMP6, TMP5)				# TMP5 = (Tнар >= 30) && (Tнар < 32)
+IMOVE(8, TMP4)						# TMP4 = 8
+MUX2(TMP5, TMP3, TMP3, TMP4)		# if ((Tнар >= 30) && (Tнар < 32)) { TMP3 = 8; }
 
-IMOVE(30, TMP11)					# TMP11 = 30
-GE(TMP0, TMP11, TMP12)				# TMP12 = (Tнар >= 30)
-IMOVE(32, TMP11)					# TMP11 = 32
-LT(TMP0, TMP11, TMP13)				# TMP13 = (Tнар < 32)
-AND(TMP12, TMP13, TMP12)			# TMP12 = (Tнар >= 30) && (Tнар < 32)
-IMOVE(9, TMP11)						# TMP11 = 9
-MUX2(TMP12, TMP10, TMP10, TMP11)	# if ((Tнар >= 30) && (Tнар < 32)) { TMP10 = 9; }
+IMOVE(20, TMP4)						# TMP4 = 20
+GE(TMP0, TMP4, TMP5)				# TMP5 = (Tнар >= 30)
+IMOVE(30, TMP4)						# TMP4 = 30
+LT(TMP0, TMP4, TMP6)				# TMP6 = (Tнар < 30)
+AND(TMP5, TMP6, TMP5)				# TMP5 = (Tнар >= 20) && (Tнар < 30)
+IMOVE(9, TMP4)						# TMP4 = 9
+MUX2(TMP5, TMP3, TMP3, TMP4)		# if ((Tнар >= 20) && (Tнар < 30)) { TMP3 = 9; }
 
-IMOVE(30, TMP11)					# TMP11 = 30
-LT(TMP0, TMP11, TMP12)				# TMP12 = (Tнар < 30)
-IMOVE(10, TMP11)					# TMP11 = 10
-MUX2(TMP12, TMP10, TMP10, TMP11)	# if (Tнар < 30) { TMP10 = 10; }
+IMOVE(20, TMP4)						# TMP4 = 20
+LT(TMP0, TMP4, TMP4)				# TMP4 = (Tнар < 20)
+IMOVE(10, TMP5)						# TMP5 = 10
+MUX2(TMP4, TMP3, TMP3, TMP5)		# if (Tнар < 20) { TMP3 = 10; }
 
-MOVE(TMP10, PWM_PERCENT)			# PWM_PERCENT = TMP10
+MOVE(TMP3, PWM_PERCENT)				# PWM_PERCENT = TMP3
 
-MOVE(TMP6, S1)
-MOVE(TMP7, S2)
-MOVE(TMP8, S3)
-MOVE(TMP9, S4)
-
-MOVE(TMP20, IND1)
-MOVE(TMP21, IND2)
-MOVE(TMP22, IND3)
-MOVE(TMP23, IND4)
-MOVE(TMP24, IND5)
+MOVE(S2_OLD, S2)
+MOVE(S3_OLD, S3)
+MOVE(S4_OLD, S4)
 
 IMOVE(7, NETLIST_SELECT)

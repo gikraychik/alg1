@@ -1,80 +1,85 @@
 # отрисовка экрана
-# TMP24 - переменная для констант
+
 INCLUDE(regs.inc)
 
-MOVE(T1, TMP15)						# TMP15 = T1; outside
-MOVE(T2, TMP16)						# TMP16 = T2; inside
-
 IEQ(0, VIDEO_MODE, TMP0)			# TMP0 = (video_mode == 0)
-IEQ(1, VIDEO_MODE, TMP1)			# TMP1 = (video_mode == 1)
-IEQ(2, VIDEO_MODE, TMP2)			# TMP2 = (video_mode == 2)
-IEQ(3, VIDEO_MODE, TMP3)			# TMP3 = (video_mode == 3)
+MOVE(T1, TMP1)						# TMP1 = T1; outside
+MOVE(T2, TMP2)						# TMP2 = T2; inside
 
 IMOVE(60, TMP4)						# 60 seconds
 
-GE(T1_LAST, TMP4, TMP5)				# TMP5 = (T1_LAST >= 60)
-GE(T2_LAST, TMP4, TMP6)				# TMP6 = (T2_LAST >= 60)
+GE(T1_LAST, TMP4, TMP3)				# TMP3 = (T1_LAST >= 60)
 
-NOT(TMP5, TMP7)						# TMP7 = !TMP5 <=> TMP7 = (T1_LAST < 60)
-NOT(TMP6, TMP8)						# TMP8 = !TMP6 <=> TMP8 = (T2_LAST < 60)
+IMOVE(0, TMP4)						# TMP4 = 0
+IMOVE(40, TMP5)						# TMP5 = 40
+SUB(TMP4, TMP5, TMP5)				# TMP5 = -40
+GE(TMP1, TMP5, TMP5)				# TMP5 = (T1 >= -40)
+IMOVE(50, TMP4)						# TMP4 = 50
+LE(TMP1, TMP4, TMP6)				# TMP6 = (T1 <= 50)
+AND(TMP5, TMP2, TMP5)				# TMP5 = (T1 >= -40) && (T1 <= 50)
+NOT(TMP3, TMP3)						# TMP3 = (T1_LAST < 60)
+AND(TMP3, TMP5, TMP5)				# TMP5 = (T1_LAST < 60) && ((T1 >= -40) && (T1 <= 50))
 
-IMOVE(0, TMP9)						# TMP9 = 0
-IMOVE(40, TMP10)					# TMP10 = 40
-SUB(TMP9, TMP10, TMP9)				# TMP9 = -40
-GE(TMP15, TMP9, TMP9)				# TMP9 = (T1 >= -40)
-IMOVE(50, TMP10)					# TMP10 = 50
-LE(TMP15, TMP10, TMP10)				# TMP10 = (T1 <= 550)
-AND(TMP9, TMP10, TMP9)				# TMP9 = (T1 >= -40) && (T1 <= 50)
-AND(TMP7, TMP9, TMP7)				# TMP7 = (T1_LAST < 60) && ((T1 >= -40) && (T1 <= 50))
+IMOVE(0, TMP4)						# TMP4 = 0
+IMOVE(40, TMP6)						# TMP6 = 40
+SUB(TMP4, TMP6, TMP6)				# TMP6 = -40
+GE(TMP2, TMP6, TMP6)				# TMP6 = (T2 >= -40)
+IMOVE(50, TMP4)						# TMP4 = 50
+LE(TMP2, TMP4, TMP7)				# TMP7 = (T2 <= 50)
+AND(TMP6, TMP7, TMP7)				# TMP7 = (T2 >= -40) && (T2 <= 50)
+IMOVE(60, TMP4)						# TMP4 = 60 seconds
+LT(T2_LAST, TMP4, TMP3)				# TMP3 = (T2_LAST < 60)
+AND(TMP3, TMP7, TMP6)				# TMP6 = (T2_LAST < 60) && (T2 >= -40) && (T2 <= 50)
 
-IMOVE(0, TMP9)						# TMP9 = 0
-IMOVE(40, TMP10)					# TMP10 = 40
-SUB(TMP9, TMP10, TMP9)				# TMP9 = -40
-GE(TMP16, TMP9, TMP9)				# TMP9 = (T2 >= -40)
-IMOVE(50, TMP10)					# TMP10 = 50
-LE(TMP16, TMP10, TMP10)				# TMP10 = (T2 <= 50)
-AND(TMP9, TMP10, TMP9)				# TMP9 = (T2 >= -40) && (T2 <= 50)
-AND(TMP8, TMP9, TMP8)				# TMP8 = (T2_LAST < 60) && (T2 >= -40) && (T2 <= 50)
+IMOVE(0, TMP4)						# TMP4 = 0
 
-NOT(TMP7, TMP5)						# TMP5 = !((T1_LAST < 60) && (T1 >= -40) && (T1 <= 50))
-NOT(TMP8, TMP6)						# TMP6 = !((T2_LAST < 60) && (T2 >= -40) && (T2 <= 50))
+# TMP7 - первый символ экрана LED0
+MUX2(TMP0, TMP7, TMP7, TMP4)		# if (VIDEO_MODE == 0) { TMP7 = ''; }
+IMOVE(0x76, TMP4)					# TMP4 = 0x76 'У'
+IEQ(1, VIDEO_MODE, TMP0)			# TMP0 = (VIDEO_MODE == 1)
+MUX2(TMP0, TMP7, TMP7, TMP4)		# if (VIDEO_MODE == 1) { TMP7 = 'У'; }
+IMOVE(0xEC, TMP4)					# TMP4 = 0xEC 'П'
+IEQ(2, VIDEO_MODE, TMP0)			# TMP0 = (VIDEO_MODE == 2)
+MUX2(TMP0, TMP7, TMP7, TMP4)		# if (VIDEO_MODE == 2) { TMP7 = 'П'; }
+IEQ(3, VIDEO_MODE, TMP0)			# TMP0 = (VIDEO_MODE == 3)
+MUX2(TMP0, TMP7, TMP7, TMP4)		# if (VIDEO_MODE == 3) { TMP7 = 'П'; }
 
-AND(TMP0, TMP6, TMP9)				# TMP9 = (video_mode == 0) && !((T2_LAST < 60) && (T2 >= -40) && (T2 <= 50)); error inside
-AND(TMP1, TMP5, TMP10)				# TMP10 = (video_mode == 1) && !((T1_LAST < 60) && (T1 >= -40) && (T1 <= 50)); error outside
+NOT(TMP6, TMP6)						# TMP6 = !((T2_LAST < 60) && (T2 >= -40) && (T2 <= 50))
+NOT(TMP5, TMP5)						# TMP5 = !((T1_LAST < 60) && (T1 >= -40) && (T1 <= 50))
+IEQ(0, VIDEO_MODE, TMP0)			# TMP0 = (VIDEO_MODE == 0)
+AND(TMP0, TMP6, TMP8)				# TMP8 = (video_mode == 0) && !((T2_LAST < 60) && (T2 >= -40) && (T2 <= 50)); error inside
+IEQ(1, VIDEO_MODE, TMP0)			# TMP0 = (VIDEO_MODE == 1)
+AND(TMP0, TMP5, TMP9)				# TMP9 = (video_mode == 1) && !((T1_LAST < 60) && (T1 >= -40) && (T1 <= 50)); error outside
+OR(TMP8, TMP9, TMP10)				# TMP10 - if error accured
 
-IMOVE(0, TMP24)						# TMP24 = 0
-# TMP11 - первый символ экрана LED0
-MUX2(TMP0, TMP11, TMP11, TMP24)		# if (VIDEO_MODE == 0) { TMP11 = ''; }
-IMOVE(0x76, TMP24)					# TMP24 = 0x76 'У'
-MUX2(TMP1, TMP11, TMP11, TMP24)		# if (VIDEO_MODE == 1) { TMP11 = 'У'; }
-IMOVE(0xEC, TMP24)					# TMP24 = 0xEC 'П'
-MUX2(TMP2, TMP11, TMP11, TMP24)		# if (VIDEO_MODE == 2) { TMP11 = 'П'; }
-MUX2(TMP3, TMP11, TMP11, TMP24)		# if (VIDEO_MODE == 3) { TMP11 = 'П'; }
+IMOVE(0, TMP4)						# TMP4 = 0
+MUX2(TMP10, TMP7, TMP7, TMP4)		# if (tmp10) { tmp7 = ''; }
 
-OR(TMP9, TMP10, TMP12)				# TMP12 - if error accured
+IEQ(0, VIDEO_MODE, TMP0)			# TMP0 = (VIDEO_MODE == 0)
+NOT(TMP6, TMP6)
+NOT(TMP5, TMP5)
+AND(TMP0, TMP6, TMP8)				# TMP8 = (video_mode == 0) && (T2_LAST < 60) && (T2 >= -40) && (T2 <= 50)
+IEQ(1, VIDEO_MODE, TMP0)			# TMP0 = (VIDEO_MODE == 1)
+AND(TMP0, TMP5, TMP9)				# TMP9 = (video_mode == 1) && ((T1_LAST < 60) && ((T1 >= -40) && (T1 <= 50)))
 
-IMOVE(0, TMP24)						# TMP24 = 0
-MUX2(TMP12, TMP11, TMP11, TMP24)	# if (tmp12) { tmp11 = ''; }
+# TMP3 - выводимая температура
+IMOVE(70, TMP4)						# TMP4 = 70
+MUX2(TMP8, TMP3, TMP4, TMP2)		# if (tmp8) { tmp3 = t2; } else { tmp3 = 70; }
+MUX2(TMP9, TMP3, TMP3, TMP1)		# if (tmp9) { tmp3 = t1; }
+IEQ(2, VIDEO_MODE, TMP0)			# TMP0 = (VIDEO_MODE == 2)
+MUX2(TMP0, TMP3, TMP3, T3)			# if (video_mode == 2) { tmp3 = t3; }
+IEQ(3, VIDEO_MODE, TMP0)			# TMP0 = (VIDEO_MODE == 3)
+MUX2(TMP0, TMP3, TMP3, TMP25)		# if (video_mode == 3) { tmp3 = tmp25; }
 
-AND(TMP0, TMP8, TMP13)				# TMP13 = (video_mode == 0) && (T2_LAST < 60)
-AND(TMP1, TMP7, TMP14)				# TMP14 = (video_mode == 1) && ((T1_LAST < 60) && ((T1 >= -40) && (T1 <= 50)))
+CD(TMP3, TMP0)						# TMP0 - LED1, TMP1 - LED2, TMP2 - LED3
 
-# TMP17 - выводимая температура
-IMOVE(70, TMP24)					# TMP24 = 70
-MUX2(TMP13, TMP17, TMP24, TMP16)	# if (tmp13) { tmp17 = t2; } else { tmp17 = 70; }
-MUX2(TMP14, TMP17, TMP17, TMP15)	# if (tmp14) { tmp17 = t1; }
-MUX2(TMP2, TMP17, TMP17, T3)		# if (video_mode == 2) { tmp17 = t3; }
-MUX2(TMP3, TMP17, TMP17, TMP25)		# if (video_mode == 3) { tmp17 = tmp25; }
+IMOVE(0x9E, TMP4)					# TMP4 = 0x9E 'E'
+MUX2(TMP10, TMP0, TMP0, TMP4)		# if (tmp10) { tmp0 = 'E' }
+IMOVE(0xA, TMP4)					# TMP4 = 0xA
+MUX2(TMP10, TMP1, TMP1, TMP4)		# 'r'
+MUX2(TMP10, TMP2, TMP2, TMP4)		# 'r' 
 
-CD(TMP17, TMP0)						# TMP0 - LED1, TMP1 - LED2, TMP2 - LED3
-
-IMOVE(0x9E, TMP24)					# TMP24 = 0x9E 'E'
-MUX2(TMP12, TMP0, TMP0, TMP24)		# if (tmp12) { tmp0 = 'E' }
-IMOVE(0xA, TMP24)					# TMP24 = 0xA
-MUX2(TMP12, TMP1, TMP1, TMP24)		# 'r'
-MUX2(TMP12, TMP2, TMP2, TMP24)		# 'r' 
-
-MOVE(TMP11, LED0)
+MOVE(TMP7, LED0)
 MOVE(TMP0, LED1)
 MOVE(TMP1, LED2)
 MOVE(TMP2, LED3)
